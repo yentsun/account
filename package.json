@@ -1,0 +1,39 @@
+{
+  "name": "yt-seneca-account",
+  "version": "1.0.0",
+  "description": "A Seneca plugin handling auth, login, user records etc (with JWT tokens)",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yentsun/account.git"
+  },
+  "keywords": [
+    "seneca",
+    "microservice",
+    "account",
+    "jwt"
+  ],
+  "author": "Maxim Korinets",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yentsun/account/issues"
+  },
+  "homepage": "https://github.com/yentsun/account#readme",
+  "devDependencies": {
+    "chai": "^3.4.1",
+    "coveralls": "^2.11.6",
+    "mocha": "^2.3.4",
+    "mocha-lcov-reporter": "^1.0.0",
+    "sinon": "^1.17.2"
+  },
+  "dependencies": {
+    "acl": "^0.4.9",
+    "seneca": "^0.9.3"
+  }
+}
