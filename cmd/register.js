@@ -6,21 +6,19 @@
 
   validator = require('validator');
 
-  util = require('./util');
+  util = require('./../util');
 
-  module.exports = function(options) {
-    var acl, mail, seneca;
-    seneca = this;
-    mail = seneca.client(options.mail);
+  module.exports = function(seneca, options) {
+    var acl, cmd_register;
     acl = options.acl;
-    seneca.add('plugin:register', function(args, respond) {
+    cmd_register = function(args, respond) {
       var email, password;
       email = args.email;
       password = args.password || util.generate_password();
       if (!validator.isEmail(email)) {
         respond(seneca.fail("Bad email: " + email));
       }
-      return seneca.act('plugin:identify', {
+      return seneca.act('role:account,cmd:identify', {
         account_id: email
       }, function(error, account) {
         if (account) {
@@ -40,14 +38,6 @@
                     return respond(error);
                   } else {
                     saved_account.password = password;
-                    if (!options.test) {
-                      mail.act({
-                        action: 'send',
-                        to: email,
-                        subject: 'Регистрация в Venture Game',
-                        text: 'Поздравляем с регистрацией!\n' + '---------------------------\n' + 'Ваш пароль: ' + password
-                      });
-                    }
                     return respond(null, saved_account);
                   }
                 });
@@ -56,8 +46,8 @@
           });
         }
       });
-    });
-    return 'register';
+    };
+    return cmd_register;
   };
 
 }).call(this);

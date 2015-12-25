@@ -4,10 +4,9 @@
 
   bcrypt = require('bcryptjs');
 
-  module.exports = function(options) {
-    var seneca;
-    seneca = this;
-    seneca.add('plugin:authenticate', function(params, respond) {
+  module.exports = function(seneca, options) {
+    var cmd_authenticate;
+    cmd_authenticate = function(params, respond) {
       var account_id, password, response;
       account_id = params.account_id;
       password = params.password;
@@ -16,7 +15,7 @@
         authenticated: false
       };
       if (account_id && password) {
-        return seneca.act('plugin:identify', {
+        return seneca.act('role:account,cmd:identify', {
           account_id: account_id
         }, function(error, account) {
           if (account) {
@@ -41,8 +40,8 @@
         seneca.log.error('missing account_id or password', account_id, password);
         return respond(null, response);
       }
-    });
-    return 'authenticate';
+    };
+    return cmd_authenticate;
   };
 
 }).call(this);

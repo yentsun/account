@@ -1,11 +1,10 @@
 jwt = require 'jsonwebtoken'
 
-module.exports = (options) ->
+module.exports = (seneca, options) ->
 
-    seneca = @
     acl = options.acl
 
-    seneca.add 'plugin:authorize', (params, respond) ->
+    cmd_authorize = (params, respond) ->
         resource = params.resource
         action = params.action
         token = params.token
@@ -29,7 +28,7 @@ module.exports = (options) ->
                 return respond null, response
 
             # re-identify the user to check his permissions and current status
-            seneca.act 'plugin:identify', {account_id: account_id}, (error, account) ->
+            seneca.act 'role:account,cmd:identify', {account_id: account_id}, (error, account) ->
                 if account
                     response.account_id = account.id
                     seneca.log.debug 'account identified', account.id
@@ -45,4 +44,4 @@ module.exports = (options) ->
                     seneca.log.debug 'authorization failed, unidentified account', account_id
                     respond null, response
 
-    'authorize'
+    cmd_authorize

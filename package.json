@@ -7,7 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "cover": "istanbul cover _mocha",
+    "coveralls": "npm run cover -- --report lcovonly && cat ./coverage/lcov.info | coveralls"
   },
   "repository": {
     "type": "git",
@@ -28,12 +30,16 @@
   "devDependencies": {
     "chai": "^3.4.1",
     "coveralls": "^2.11.6",
+    "istanbul": "^0.4.1",
     "mocha": "^2.3.4",
     "mocha-lcov-reporter": "^1.0.0",
     "sinon": "^1.17.2"
   },
   "dependencies": {
     "acl": "^0.4.9",
-    "seneca": "^0.9.3"
+    "bcryptjs": "^2.3.0",
+    "jsonwebtoken": "^5.4.1",
+    "seneca": "^0.9.3",
+    "validator": "^4.4.0"
   }
 }

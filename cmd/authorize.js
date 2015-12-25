@@ -4,11 +4,10 @@
 
   jwt = require('jsonwebtoken');
 
-  module.exports = function(options) {
-    var acl, seneca;
-    seneca = this;
+  module.exports = function(seneca, options) {
+    var acl, cmd_authorize;
     acl = options.acl;
-    seneca.add('plugin:authorize', function(params, respond) {
+    cmd_authorize = function(params, respond) {
       var action, resource, response, secret, token;
       resource = params.resource;
       action = params.action;
@@ -31,7 +30,7 @@
           seneca.log.error('failed to decode id');
           return respond(null, response);
         }
-        return seneca.act('plugin:identify', {
+        return seneca.act('role:account,cmd:identify', {
           account_id: account_id
         }, function(error, account) {
           if (account) {
@@ -53,8 +52,8 @@
           }
         });
       });
-    });
-    return 'authorize';
+    };
+    return cmd_authorize;
   };
 
 }).call(this);

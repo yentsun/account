@@ -1,13 +1,11 @@
 bcrypt = require 'bcryptjs'
 validator = require 'validator'
-util = require './util'
+util = require './../util'
 
-module.exports = (options) ->
-    seneca = @
-    mail = seneca.client(options.mail)
+module.exports = (seneca, options) ->
     acl = options.acl
 
-    seneca.add 'plugin:register', (args, respond) ->
+    cmd_register = (args, respond) ->
         email = args.email
         password = args.password or util.generate_password()
 
@@ -16,7 +14,7 @@ module.exports = (options) ->
             respond seneca.fail "Bad email: #{email}"
 
         # check for registered accounts
-        seneca.act 'plugin:identify', {account_id: email}, (error, account) ->
+        seneca.act 'role:account,cmd:identify', {account_id: email}, (error, account) ->
             if account
                 respond seneca.fail 'Already registered'
             else
@@ -37,14 +35,5 @@ module.exports = (options) ->
                                     respond error
                                 else
                                     saved_account.password = password
-                                    if !options.test
-                                        mail.act
-                                            action: 'send'
-                                            to: email
-                                            subject: 'Регистрация в Venture Game'
-                                            text:    'Поздравляем с регистрацией!\n' +
-                                            '---------------------------\n' +
-                                            'Ваш пароль: ' + password
                                     respond null, saved_account
-
-    'register'
+    cmd_register

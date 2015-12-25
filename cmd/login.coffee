@@ -1,12 +1,12 @@
 jwt = require 'jsonwebtoken'
 
-login = (options) ->
-    seneca = @
-    seneca.add 'plugin:login', (params, respond) ->
+module.exports = (seneca, options) ->
+
+    cmd_login = (params, respond) ->
             account_id = params.account_id
             password = params.password
 
-            seneca.act 'plugin:authenticate',
+            seneca.act 'role:account,cmd:authenticate',
                 account_id: account_id
                 password: password
                 , (error, res) ->
@@ -20,4 +20,4 @@ login = (options) ->
                     else
                         respond null, res
 
-module.exports = login
+    cmd_login

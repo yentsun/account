@@ -24,15 +24,11 @@ log_mode = process.env.TEST_LOG_MODE or 'quiet'
 seneca = require('seneca')(
     log: log_mode
     )
-    .use '../plugins/identify'
-    .use '../plugins/register', options
-    .use '../plugins/authenticate', options
-    .use '../plugins/authorize', options
-    .use '../plugins/login', options
-    .use '../plugins/profile', options
+    .use '../plugin', options
 
-account = seneca.pin {plugin: '*'}
-profile = seneca.pin {plugin: 'profile', action: '*'}
+account = seneca.pin
+    role: 'account'
+    cmd: '*'
 
 describe 'register', () ->
 
@@ -223,33 +219,3 @@ describe 'authorize', () ->
         account.authorize {token: null, resource: 'profile', permission: 'view'}, (error, res) ->
             assert.isFalse res.authorized
             do done
-
-describe 'plugin:profile', () ->
-
-    before (done) ->
-        account.register {email: 'authorized@player.com', password: 'authpass'}, (error, res) ->
-            profile.update {account_id: 'authorized@player.com', data: {name: 'Auth Playa'}}
-            done()
-        account.register {email: 'authorized@player2.com', password: 'authpass'}, (error, res) ->
-            profile.update {account_id: 'authorized@player2.com', data: {name: 'Auth Playa Two'}}
-            done()
-        account.register {email: 'authorized@player3.com', password: 'authpass'}, (error, res) ->
-            done()
-
-    it 'creates new profile', (done) ->
-        profile.update {account_id: 'authorized@player3.com', data: {name: 'New Kid Three'}},
-            (error, res) ->
-                assert.equal res.name, 'New Kid Three'
-                done()
-
-    it 'updates existing profile', (done) ->
-        profile.update {account_id: 'authorized@player2.com', data: {name: 'New Kid'}},
-            (error, res) ->
-                assert.equal res.name, 'New Kid'
-                done()
-
-    it 'returns profile dict', (done) ->
-        profile.get {account_id: 'authorized@player.com'},
-            (error, res) ->
-                assert.equal res.name, 'Auth Playa'
-                done()

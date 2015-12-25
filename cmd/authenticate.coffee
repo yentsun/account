@@ -1,8 +1,8 @@
 bcrypt = require 'bcryptjs'
 
-module.exports = (options) ->
-    seneca = @
-    seneca.add 'plugin:authenticate', (params, respond) ->
+module.exports = (seneca, options) ->
+
+    cmd_authenticate = (params, respond) ->
         account_id = params.account_id
         password = params.password
         response =
@@ -11,7 +11,7 @@ module.exports = (options) ->
 
         if account_id and password
             # get the account
-            seneca.act 'plugin:identify', {account_id: account_id}, (error, account) ->
+            seneca.act 'role:account,cmd:identify', {account_id: account_id}, (error, account) ->
                 if account
                     seneca.log.debug 'account identified', account.id
                     bcrypt.compare password, account.password_hash, (error, passed) ->
@@ -30,4 +30,4 @@ module.exports = (options) ->
             seneca.log.error 'missing account_id or password', account_id, password
             respond null, response
 
-    'authenticate'
+    cmd_authenticate
