@@ -62,9 +62,6 @@
                 return acl.addUserRoles(saved_account.id, [starter_role], function(error) {
                   if (error) {
                     seneca.log.error('adding starter role to new account failed:', error.message);
-                    account.remove({
-                      account_id: saved_account.id
-                    });
                     return respond(error, null);
                   } else {
                     if (password_generated) {

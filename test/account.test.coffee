@@ -1,10 +1,13 @@
 assert = require 'chai'
     .assert
+bcrypt = require 'bcryptjs'
 sinon = require 'sinon'
 acl = require 'acl'
 util = require '../util'
 acl_backend = new acl.memoryBackend()
 acl = new acl acl_backend
+seneca_entity = require '../node_modules/seneca/lib/entity'
+    .Entity.prototype
 
 ac_list = [
     roles: ['player']
@@ -64,11 +67,41 @@ describe 'register', () ->
             assert.equal new_user.password.length, 8
             do done
 
-    it 'throws an error if starter role is not defined', (done) ->
-        seneca.options.starter_role = null
-        account.register {email: 'no@matter.com'}, (error, new_user) ->
+    it 'fails if there is a salt generation error', (done) ->
+        stub = sinon.stub bcrypt, 'genSalt', (length, callback) ->
+            callback new Error 'bcrypt salt generation error'
+        account.register {email: 'good1@email.com', password: 'pass'}, (error, new_user) ->
+            do stub.restore
+            assert.isNull new_user
+            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: bcrypt salt generation error.'
             do done
 
+    it 'fails if there is a hash generation error', (done) ->
+        stub = sinon.stub bcrypt, 'hash', (password, salt, callback) ->
+            callback new Error 'bcrypt hash generation error'
+        account.register {email: 'good2@email.com', password: 'pass'}, (error, new_user) ->
+            do stub.restore
+            assert.isNull new_user
+            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: bcrypt hash generation error.'
+            do done
+
+    it 'fails if there is a storage error', (done) ->
+        stub = sinon.stub seneca_entity, 'save$', (callback) ->
+            callback new Error 'seneca save$ error'
+        account.register {email: 'good3@email.com', password: 'pass'}, (error, new_user) ->
+            do stub.restore
+            assert.isNull new_user
+            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: seneca save$ error.'
+            do done
+
+    it 'fails if there is an acl error', (done) ->
+        stub = sinon.stub acl, 'addUserRoles', (id, roles, callback) ->
+            callback new Error 'acl error while addin roles'
+        account.register {email: 'good3@email.com', password: 'pass'}, (error, new_user) ->
+            do stub.restore
+            assert.isNull new_user
+            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: acl error while addin roles.'
+            do done
 
 
 describe 'authenticate', () ->
@@ -245,9 +278,10 @@ describe 'util.check_options', () ->
     it 'throws an error if a required option is not present', (done) ->
         required = ['required']
         options =
-            non_required = 'some_value'
+            non_required: 'some_value'
         assert.throws () ->
             util.check_options options, required
+        , 'required option required not defined'
         do done
 
     it 'does not throw errors if all required options are present', (done) ->

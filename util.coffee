@@ -28,7 +28,11 @@ module.exports =
     Throws errors if required options not present
     ###
     check_options: (options, required) ->
+        result = []
         for option in required
             if option not of options
+                console.log 'about to throw'
                 throw new Error "required option #{option} not defined"
-
+            else
+                result.push option
+        result

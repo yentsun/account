@@ -34,17 +34,18 @@
     Throws errors if required options not present
      */
     check_options: function(options, required) {
-      var j, len, option, results;
-      results = [];
+      var j, len, option, result;
+      result = [];
       for (j = 0, len = required.length; j < len; j++) {
         option = required[j];
         if (!(option in options)) {
+          console.log('about to throw');
           throw new Error("required option " + option + " not defined");
         } else {
-          results.push(void 0);
+          result.push(option);
         }
       }
-      return results;
+      return result;
     }
   };
 
