@@ -28,6 +28,23 @@
         i += 1;
       }
       return result.join('');
+    },
+
+    /*
+    Throws errors if required options not present
+     */
+    check_options: function(options, required) {
+      var j, len, option, results;
+      results = [];
+      for (j = 0, len = required.length; j < len; j++) {
+        option = required[j];
+        if (!(option in options)) {
+          throw new Error("required option " + option + " not defined");
+        } else {
+          results.push(void 0);
+        }
+      }
+      return results;
     }
   };
 

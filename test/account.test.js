@@ -28,9 +28,10 @@
 
   options = {
     test: true,
-    secret: 'secret',
+    token_secret: 'secret',
     jwtNoTimestamp: true,
-    acl: acl
+    acl: acl,
+    starter_role: 'player'
   };
 
   log_mode = process.env.TEST_LOG_MODE || 'quiet';
@@ -61,8 +62,7 @@
     it('silently fails if email is bad', function(done) {
       return account.register({
         email: 'bad_email.com',
-        password: 'pass',
-        fatal$: false
+        password: 'pass'
       }, function(error, new_account) {
         assert.isNull(new_account);
         assert.isNull(error);
@@ -85,11 +85,19 @@
         }
       });
     });
-    return it('generates new password if its not set', function(done) {
+    it('generates new password if its not set', function(done) {
       return account.register({
         email: 'no@pass.com'
       }, function(error, new_user) {
         assert.equal(new_user.password.length, 8);
+        return done();
+      });
+    });
+    return it('throws an error if starter role is not defined', function(done) {
+      seneca.options.starter_role = null;
+      return account.register({
+        email: 'no@matter.com'
+      }, function(error, new_user) {
         return done();
       });
     });
@@ -343,6 +351,30 @@
         return util.generate_password(8, 'abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+' + 'abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+a' + 'bcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcde' + 'fABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+');
       };
       assert.throws(bad_gen_pass);
+      return done();
+    });
+  });
+
+  describe('util.check_options', function() {
+    it('throws an error if a required option is not present', function(done) {
+      var non_required, required;
+      required = ['required'];
+      options = non_required = 'some_value';
+      assert.throws(function() {
+        return util.check_options(options, required);
+      });
+      return done();
+    });
+    return it('does not throw errors if all required options are present', function(done) {
+      var required;
+      required = ['required_one', 'required_two'];
+      options = {
+        required_one: 1,
+        required_two: 2
+      };
+      assert.doesNotThrow(function() {
+        return util.check_options(options, required);
+      });
       return done();
     });
   });

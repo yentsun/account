@@ -4,14 +4,15 @@ util = require './../util'
 
 module.exports = (seneca, options) ->
     acl = options.acl
+    starter_role = options.starter_role
     password_length = options.password_length or 8
+    password_generated = false
     account = seneca.pin
         role: 'account'
         cmd: '*'
 
     cmd_register = (args, respond) ->
         email = args.email
-        password = args.password or util.generate_password password_length
 
         # check validity
         if !validator.isEmail email
@@ -24,6 +25,11 @@ module.exports = (seneca, options) ->
                 seneca.log.warn 'account already registered', account.id
                 respond null, null
             else
+                password = args.password
+                if !password
+                    seneca.log.debug 'generating password'
+                    password = util.generate_password password_length
+                    password_generated = true
                 # hash password
                 bcrypt.genSalt 10, (error, salt) ->
                     if error
@@ -42,12 +48,13 @@ module.exports = (seneca, options) ->
                             if error
                                 seneca.log.error 'new account record failed:', error.message
                                 return respond error, null
-                            # assign `player` role
-                            acl.addUserRoles saved_account.id, ['player'], (error) ->
+                            seneca.log.debug 'assigning starter role', starter_role
+                            acl.addUserRoles saved_account.id, [starter_role], (error) ->
                                 if error
-                                    seneca.log.error 'adding role to new account failed:', error.message
-                                    account.remove {account_id: saved_account.id}, (error, removed_account) ->
-                                        return respond error, null
-                                saved_account.password = password
-                                respond null, saved_account
+                                    seneca.log.error 'adding starter role to new account failed:', error.message
+                                    account.remove {account_id: saved_account.id}
+                                    return respond error, null
+                                else
+                                    saved_account.password = password if password_generated
+                                    respond null, saved_account
     cmd_register

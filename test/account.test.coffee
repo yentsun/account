@@ -16,9 +16,10 @@ ac_list = [
 
 options =
     test: true
-    secret: 'secret'
+    token_secret: 'secret'
     jwtNoTimestamp: true
     acl: acl
+    starter_role: 'player'
 
 log_mode = process.env.TEST_LOG_MODE or 'quiet'
 
@@ -43,7 +44,7 @@ describe 'register', () ->
                     do done
 
     it 'silently fails if email is bad', (done) ->
-        account.register {email: 'bad_email.com', password: 'pass', fatal$: false},
+        account.register {email: 'bad_email.com', password: 'pass'},
             (error, new_account) ->
                 assert.isNull new_account
                 assert.isNull error
@@ -61,7 +62,14 @@ describe 'register', () ->
     it 'generates new password if its not set', (done) ->
         account.register {email: 'no@pass.com'}, (error, new_user) ->
             assert.equal new_user.password.length, 8
-            done()
+            do done
+
+    it 'throws an error if starter role is not defined', (done) ->
+        seneca.options.starter_role = null
+        account.register {email: 'no@matter.com'}, (error, new_user) ->
+            do done
+
+
 
 describe 'authenticate', () ->
 
@@ -230,6 +238,25 @@ describe 'util.generate_password', () ->
                                       'bcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcde'+
                                       'fABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+'
         assert.throws bad_gen_pass
+        do done
+
+describe 'util.check_options', () ->
+
+    it 'throws an error if a required option is not present', (done) ->
+        required = ['required']
+        options =
+            non_required = 'some_value'
+        assert.throws () ->
+            util.check_options options, required
+        do done
+
+    it 'does not throw errors if all required options are present', (done) ->
+        required = ['required_one', 'required_two']
+        options =
+            required_one: 1
+            required_two: 2
+        assert.doesNotThrow () ->
+            util.check_options options, required
         do done
 
 

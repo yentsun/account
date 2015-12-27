@@ -12,7 +12,7 @@ module.exports = (seneca, options) ->
                 , (error, res) ->
                     if res and res.authenticated
                         # issue a token
-                        secret = options.secret
+                        secret = options.token_secret
                         res.token = jwt.sign {id: account_id},
                             secret,
                             noTimestamp: options.jwtNoTimestamp

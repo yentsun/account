@@ -9,17 +9,18 @@
   util = require('./../util');
 
   module.exports = function(seneca, options) {
-    var account, acl, cmd_register, password_length;
+    var account, acl, cmd_register, password_generated, password_length, starter_role;
     acl = options.acl;
+    starter_role = options.starter_role;
     password_length = options.password_length || 8;
+    password_generated = false;
     account = seneca.pin({
       role: 'account',
       cmd: '*'
     });
     cmd_register = function(args, respond) {
-      var email, password;
+      var email;
       email = args.email;
-      password = args.password || util.generate_password(password_length);
       if (!validator.isEmail(email)) {
         seneca.log.warn('bad email', email);
         return respond(null, null);
@@ -27,10 +28,17 @@
       return account.identify({
         account_id: email
       }, function(error, account) {
+        var password;
         if (account) {
           seneca.log.warn('account already registered', account.id);
           return respond(null, null);
         } else {
+          password = args.password;
+          if (!password) {
+            seneca.log.debug('generating password');
+            password = util.generate_password(password_length);
+            password_generated = true;
+          }
           return bcrypt.genSalt(10, function(error, salt) {
             if (error) {
               seneca.log.error('salt generation failed:', error.message);
@@ -50,17 +58,20 @@
                   seneca.log.error('new account record failed:', error.message);
                   return respond(error, null);
                 }
-                return acl.addUserRoles(saved_account.id, ['player'], function(error) {
+                seneca.log.debug('assigning starter role', starter_role);
+                return acl.addUserRoles(saved_account.id, [starter_role], function(error) {
                   if (error) {
-                    seneca.log.error('adding role to new account failed:', error.message);
+                    seneca.log.error('adding starter role to new account failed:', error.message);
                     account.remove({
                       account_id: saved_account.id
-                    }, function(error, removed_account) {
-                      return respond(error, null);
                     });
+                    return respond(error, null);
+                  } else {
+                    if (password_generated) {
+                      saved_account.password = password;
+                    }
+                    return respond(null, saved_account);
                   }
-                  saved_account.password = password;
-                  return respond(null, saved_account);
                 });
               });
             });

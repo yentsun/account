@@ -23,3 +23,12 @@ module.exports =
             i += 1
 
         result.join ''
+
+    ###
+    Throws errors if required options not present
+    ###
+    check_options: (options, required) ->
+        for option in required
+            if option not of options
+                throw new Error "required option #{option} not defined"
+

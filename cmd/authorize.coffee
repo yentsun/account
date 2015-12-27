@@ -8,7 +8,7 @@ module.exports = (seneca, options) ->
         resource = params.resource
         action = params.action
         token = params.token
-        secret = options.secret
+        secret = options.token_secret
         response =
             token_verified: false
             authorized: false

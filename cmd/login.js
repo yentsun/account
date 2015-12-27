@@ -16,7 +16,7 @@
       }, function(error, res) {
         var secret;
         if (res && res.authenticated) {
-          secret = options.secret;
+          secret = options.token_secret;
           res.token = jwt.sign({
             id: account_id
           }, secret, {
