@@ -2,6 +2,7 @@ assert = require 'chai'
     .assert
 sinon = require 'sinon'
 acl = require 'acl'
+util = require '../util'
 acl_backend = new acl.memoryBackend()
 acl = new acl acl_backend
 
@@ -34,29 +35,28 @@ describe 'register', () ->
 
     it 'registers new account', (done) ->
         account.register {email: 'good@email.com', password: 'pass'},
-            (err, new_user) ->
-                if err
-                    done err
-                assert.equal new_user.id, 'good@email.com'
-                acl.userRoles new_user.id, (error, roles) ->
+            (error, new_account) ->
+                assert.equal new_account.id, 'good@email.com'
+                assert.isNull error
+                acl.userRoles new_account.id, (error, roles) ->
                     assert.include roles, 'player'
                     do done
 
-    it 'fails if email is bad', (done) ->
-        account.register {email: 'bad_email.com', password: 'pass'},
-            (error, new_user) ->
-                assert.isUndefined new_user
-                assert.equal 'seneca: Bad email: bad_email.com', error.message
-                done()
+    it 'silently fails if email is bad', (done) ->
+        account.register {email: 'bad_email.com', password: 'pass', fatal$: false},
+            (error, new_account) ->
+                assert.isNull new_account
+                assert.isNull error
+                do done
 
-    it 'fails when player is already registered', (done) ->
-        account.register {email: 'already@there.com'}, (error, result) ->
-            if result
+    it 'silently fails when player is already registered', (done) ->
+        account.register {email: 'already@there.com'}, (error, new_account) ->
+            if new_account
                 account.register {email: 'already@there.com', password: 'pass'},
-                    (error, new_user) ->
-                        assert.isUndefined new_user
-                        assert.equal 'seneca: Already registered', error.message
-                        done()
+                    (error, new_account) ->
+                        assert.isNull new_account
+                        assert.isNull error
+                        do done
 
     it 'generates new password if its not set', (done) ->
         account.register {email: 'no@pass.com'}, (error, new_user) ->
@@ -219,3 +219,17 @@ describe 'authorize', () ->
         account.authorize {token: null, resource: 'profile', permission: 'view'}, (error, res) ->
             assert.isFalse res.authorized
             do done
+
+
+describe 'util.generate_password', () ->
+
+    it 'throws an error if length is more than 256', (done) ->
+        bad_gen_pass = () ->
+            util.generate_password 8, 'abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+'+
+                                      'abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+a'+
+                                      'bcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcde'+
+                                      'fABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+'
+        assert.throws bad_gen_pass
+        do done
+
+

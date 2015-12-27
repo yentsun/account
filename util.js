@@ -12,8 +12,7 @@
      */
     generate_password: function(length, chars) {
       var cursor, i, random_bytes, result;
-      if (!chars || !length) {
-        length = 8;
+      if (chars == null) {
         chars = 'abcdefABCDEF&^$012345_*+';
       }
       if (chars.length > 256) {

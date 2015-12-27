@@ -6,11 +6,7 @@ module.exports =
     Generates random password
     credit: http://stackoverflow.com/a/25690754/216042
     ###
-    generate_password: (length, chars) ->
-
-        if !chars or !length
-            length = 8
-            chars = 'abcdefABCDEF&^$012345_*+'
+    generate_password: (length, chars='abcdefABCDEF&^$012345_*+') ->
 
         if chars.length > 256
             throw new Error "Argument 'chars' should not have more than 256 characters otherwise
