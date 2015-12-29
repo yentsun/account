@@ -349,8 +349,9 @@
     it('does not authorize with a bad token', function(done) {
       return account.authorize({
         token: 'bad.token'
-      }, function(error, result) {
-        assert.notOk(result.passed);
+      }, function(error, res) {
+        assert.isFalse(res.token_verified);
+        assert.isFalse(res.authorized);
         return done();
       });
     });
@@ -358,6 +359,7 @@
       return account.authorize({
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 'eyJpZCI6InVua25vd25Aa2lkLmNvbSJ9.' + 'gLjI4tqAbmxS5xItMo2IuX2-3XxK0DHCR8q-SuiCkwk'
       }, function(error, res) {
+        assert.isTrue(res.token_verified);
         assert.isFalse(res.authorized);
         return done();
       });

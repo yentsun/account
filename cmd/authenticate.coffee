@@ -24,7 +24,7 @@ module.exports = (seneca, options) ->
                             respond null, response
                 else
                     seneca.log.debug 'authentication failed, unidentified account', account_id
-                    response.identified = false
+                    response.identified = false # TODO is this really needed?
                     respond null, response
         else
             seneca.log.error 'missing account_id or password', account_id, password

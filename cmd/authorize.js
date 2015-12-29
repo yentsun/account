@@ -20,7 +20,7 @@
       return jwt.verify(token, secret, function(error, decoded) {
         var account_id;
         if (error) {
-          seneca.log.debug('token verification error', error);
+          seneca.log.debug('token verification error', error.message);
           return respond(null, response);
         }
         seneca.log.debug('token verified');

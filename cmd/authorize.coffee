@@ -16,7 +16,7 @@ module.exports = (seneca, options) ->
         # verify and read token payload
         jwt.verify token, secret, (error, decoded) ->
             if error
-                seneca.log.debug 'token verification error', error
+                seneca.log.debug 'token verification error', error.message
                 return respond null, response
 
             seneca.log.debug 'token verified'
