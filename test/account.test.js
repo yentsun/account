@@ -145,7 +145,7 @@
     return it('fails if there is an acl error', function(done) {
       var stub;
       stub = sinon.stub(acl, 'addUserRoles', function(id, roles, callback) {
-        return callback(new Error('acl error while addin roles'));
+        return callback(new Error('acl error while adding roles'));
       });
       return account.register({
         email: 'good3@email.com',
@@ -153,7 +153,7 @@
       }, function(error, new_user) {
         stub.restore();
         assert.isNull(new_user);
-        assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: acl error while addin roles.');
+        assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: acl error while adding roles.');
         return done();
       });
     });
@@ -248,9 +248,8 @@
       });
     });
     return it('returns null if there was an error while loading record', function(done) {
-      var entity, stub;
-      entity = require('../node_modules/seneca/lib/entity');
-      stub = sinon.stub(entity.Entity.prototype, 'load$', function(id, callback) {
+      var stub;
+      stub = sinon.stub(seneca_entity, 'load$', function(id, callback) {
         var error;
         error = new Error('entity load error');
         return callback(error);
@@ -397,6 +396,63 @@
         permission: 'view'
       }, function(error, res) {
         assert.isFalse(res.authorized);
+        return done();
+      });
+    });
+  });
+
+  describe('delete', function() {
+    ({
+      before: function(done) {
+        return account.register({
+          email: 'victim@player.com',
+          password: 'authpass'
+        }, function(error, res) {
+          return account.identify({
+            account_id: 'victim@player.com'
+          }, function(error, res) {
+            assert.equal(res.id, 'victim@player.com');
+            return done();
+          });
+        });
+      }
+    });
+    it('deletes a registered account and makes sure it is not present any more', function(done) {
+      return account["delete"]({
+        account_id: 'victim@player.com'
+      }, function(error, res) {
+        assert.isNull(error);
+        assert.isNull(res);
+        return account.identify({
+          account_id: 'victim@player.com'
+        }, function(error, res) {
+          assert.isNull(res);
+          return done();
+        });
+      });
+    });
+    it('returns nothing id there is no such account', function(done) {
+      return account["delete"]({
+        account_id: 'stranger@player.com'
+      }, function(error, res) {
+        assert.isNull(error);
+        assert.isNull(res);
+        return done();
+      });
+    });
+    return it('returns error if deletion failed', function(done) {
+      var stub;
+      stub = sinon.stub(seneca_entity, 'remove$', function(id, callback) {
+        var error;
+        error = new Error('entity removal error');
+        return callback(error);
+      });
+      return account["delete"]({
+        account_id: 'victim@player.com'
+      }, function(error, res) {
+        stub.restore();
+        assert.equal(error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.');
+        assert.isNull(res);
         return done();
       });
     });

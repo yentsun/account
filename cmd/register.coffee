@@ -40,22 +40,21 @@ module.exports = (seneca, options) ->
                             seneca.log.error 'password hash failed:', error.message
                             return respond error, null
 
-                        # create new user record
-                        new_account = seneca.make 'account'
-                        new_account.id = email
-                        new_account.password_hash = hash
-                        new_account.save$ (error, saved_account) ->
+                        seneca.log.debug 'assigning starter role', starter_role
+                        acl.addUserRoles email, [starter_role], (error) ->
                             if error
-                                seneca.log.error 'new account record failed:', error.message
+                                seneca.log.error 'adding starter role to new account failed:', error.message
                                 return respond error, null
-                            seneca.log.debug 'assigning starter role', starter_role
-                            acl.addUserRoles saved_account.id, [starter_role], (error) ->
-                                if error
-                                    seneca.log.error 'adding starter role to new account failed:', error.message
-                                    # TODO add account.remove
-#                                    account.remove {account_id: saved_account.id}
-                                    return respond error, null
-                                else
-                                    saved_account.password = password if password_generated
-                                    respond null, saved_account
+                            else
+                                # create new user record
+                                new_account = seneca.make 'account'
+                                new_account.id = email
+                                new_account.password_hash = hash
+                                new_account.save$ (error, saved_account) ->
+                                    if error
+                                        seneca.log.error 'new account record failed:', error.message
+                                        respond error, null
+                                    if saved_account
+                                        saved_account.password = password if password_generated
+                                        respond null, saved_account
     cmd_register

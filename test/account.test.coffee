@@ -96,11 +96,11 @@ describe 'register', () ->
 
     it 'fails if there is an acl error', (done) ->
         stub = sinon.stub acl, 'addUserRoles', (id, roles, callback) ->
-            callback new Error 'acl error while addin roles'
+            callback new Error 'acl error while adding roles'
         account.register {email: 'good3@email.com', password: 'pass'}, (error, new_user) ->
             do stub.restore
             assert.isNull new_user
-            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: acl error while addin roles.'
+            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: acl error while adding roles.'
             do done
 
 
@@ -139,6 +139,7 @@ describe 'authenticate', () ->
             assert.isFalse result.authenticated
             do done
 
+
 describe 'identify', () ->
 
     hash = null
@@ -161,14 +162,14 @@ describe 'identify', () ->
             do done
 
     it 'returns null if there was an error while loading record', (done) ->
-        entity = require '../node_modules/seneca/lib/entity'
-        stub = sinon.stub entity.Entity.prototype, 'load$', (id, callback) ->
+        stub = sinon.stub seneca_entity, 'load$', (id, callback) ->
             error = new Error 'entity load error'
             callback error
         account.identify {account_id: email}, (error, res) ->
             assert.isNull res
             do stub.restore
             do done
+
 
 describe 'login', () ->
 
@@ -196,6 +197,7 @@ describe 'login', () ->
         account.login {account_id: 'logged@in.com', password: 'loggedpass'}, (error, res) ->
             assert.equal res.token, issued_token
             do done
+
 
 describe 'authorize', () ->
 
@@ -264,6 +266,39 @@ describe 'authorize', () ->
             do done
 
 
+describe 'delete', () ->
+
+    before: (done) ->
+        account.register {email: 'victim@player.com', password: 'authpass'}, (error, res) ->
+            account.identify {account_id: 'victim@player.com'}, (error, res) ->
+                assert.equal res.id, 'victim@player.com'
+                do done
+
+    it 'deletes a registered account and makes sure it is not present any more', (done) ->
+        account.delete {account_id: 'victim@player.com'}, (error, res) ->
+            assert.isNull error
+            assert.isNull res
+            account.identify {account_id: 'victim@player.com'}, (error, res) ->
+                assert.isNull res
+                do done
+
+    it 'returns nothing id there is no such account', (done) ->
+        account.delete {account_id: 'stranger@player.com'}, (error, res) ->
+            assert.isNull error
+            assert.isNull res
+            do done
+
+    it 'returns error if deletion failed', (done) ->
+        stub = sinon.stub seneca_entity, 'remove$', (id, callback) ->
+            error = new Error 'entity removal error'
+            callback error
+        account.delete {account_id: 'victim@player.com'}, (error, res) ->
+            do stub.restore
+            assert.equal error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.'
+            assert.isNull res
+            do done
+
+
 describe 'util.generate_password', () ->
 
     it 'throws an error if length is more than 256', (done) ->
@@ -274,6 +309,7 @@ describe 'util.generate_password', () ->
                                       'fABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+abcdefABCDEF&^$012345_*+'
         assert.throws bad_gen_pass
         do done
+
 
 describe 'util.check_options', () ->
 
