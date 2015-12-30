@@ -9,6 +9,13 @@
       return account_records.load$(id, function(error, account) {
         if (error) {
           seneca.log.error('error while loading account', id, error.message);
+          seneca.act('role:error,cmd:register', {
+            from: 'account.identify.entity.load$',
+            message: error.message,
+            args: {
+              id: id
+            }
+          });
           return respond(null, null);
         } else {
           return respond(null, account);

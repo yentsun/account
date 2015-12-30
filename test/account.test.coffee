@@ -9,6 +9,8 @@ acl = new acl acl_backend
 seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
+error_client = require('seneca')()
+
 ac_list = [
     roles: ['player']
     allows: [
@@ -30,6 +32,7 @@ seneca = require('seneca')(
     log: log_mode
     )
     .use '../plugin', options
+    .client()
 
 account = seneca.pin
     role: 'account'
@@ -37,11 +40,12 @@ account = seneca.pin
 
 describe 'register', () ->
 
-    it 'registers new account', (done) ->
+    it 'registers new account and assert no password in response', (done) ->
         account.register {email: 'good@email.com', password: 'pass'},
             (error, new_account) ->
                 assert.equal new_account.id, 'good@email.com'
                 assert.isNull error
+                assert.isUndefined new_account.password
                 acl.userRoles new_account.id, (error, roles) ->
                     assert.include roles, 'player'
                     do done
