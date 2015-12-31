@@ -1,5 +1,5 @@
 {
-  "name": "yt-seneca-account",
+  "name": "yt-seneca-account-plugin",
   "version": "1.0.0",
   "description": "A Seneca plugin handling auth, login, user records etc (with JWT tokens)",
   "main": "index.js",
