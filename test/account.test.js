@@ -271,14 +271,6 @@
   describe('login', function() {
     var issued_token;
     issued_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.' + 'eyJpZCI6ImxvZ2dlZEBpbi5jb20ifQ.' + 'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs';
-    before(function(done) {
-      return account.register({
-        email: 'logged@in.com',
-        password: 'loggedpass'
-      }, function(error, res) {
-        return done();
-      });
-    });
     it('logs in a user', function(done) {
       return account.login({
         account_id: 'logged@in.com'

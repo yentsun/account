@@ -182,10 +182,6 @@ describe 'login', () ->
         'eyJpZCI6ImxvZ2dlZEBpbi5jb20ifQ.' +
         'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs'
 
-    before (done) ->
-        account.register {email: 'logged@in.com', password: 'loggedpass'}, (error, res) ->
-            do done
-
     it 'logs in a user', (done) ->
         account.login {account_id: 'logged@in.com'}, (error, res) ->
             assert.equal issued_token, res.token
