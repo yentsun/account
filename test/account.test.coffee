@@ -3,13 +3,12 @@ assert = require 'chai'
 bcrypt = require 'bcryptjs'
 sinon = require 'sinon'
 acl = require 'acl'
+moment = require 'moment'
 util = require '../util'
 acl_backend = new acl.memoryBackend()
 acl = new acl acl_backend
 seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
-
-error_client = require('seneca')()
 
 ac_list = [
     roles: ['player']
@@ -46,6 +45,7 @@ describe 'register', () ->
                 assert.equal new_account.id, 'good@email.com'
                 assert.isNull error
                 assert.isUndefined new_account.password
+                assert.equal new_account.registered_at, do moment().format
                 acl.userRoles new_account.id, (error, roles) ->
                     assert.include roles, 'player'
                     do done

@@ -1,5 +1,6 @@
 bcrypt = require 'bcryptjs'
 validator = require 'validator'
+moment = require 'moment'
 util = require './../util'
 
 module.exports = (seneca, options) ->
@@ -62,6 +63,7 @@ module.exports = (seneca, options) ->
                                 new_account = seneca.make 'account'
                                 new_account.id = email
                                 new_account.password_hash = hash
+                                new_account.registered_at = do moment().format
                                 new_account.save$ (error, saved_account) ->
                                     if error
                                         seneca.log.error 'new account record failed:', error.message
