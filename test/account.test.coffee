@@ -187,20 +187,15 @@ describe 'login', () ->
             do done
 
     it 'logs in a user', (done) ->
-        account.login {account_id: 'logged@in.com', password: 'loggedpass'}, (error, res) ->
-            assert.ok res.authenticated
+        account.login {account_id: 'logged@in.com'}, (error, res) ->
             assert.equal issued_token, res.token
             do done
 
-    it 'returns `authenticated:false` if password is incorrect', (done) ->
-        account.login {account_id: 'logged@in.com', password: 'incorrect'}, (error, res) ->
-            assert.isFalse res.authenticated
-            do done
-
     it 'returns same token if a user already logged in', (done) ->
-        account.login {account_id: 'logged@in.com', password: 'loggedpass'}, (error, res) ->
-            assert.equal res.token, issued_token
-            do done
+        account.login {account_id: 'logged@in.com'}, (error, res) ->
+            account.login {account_id: 'logged@in.com'}, (error, res) ->
+                assert.equal res.token, issued_token
+                do done
 
 
 describe 'authorize', () ->

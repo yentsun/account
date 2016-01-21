@@ -281,30 +281,22 @@
     });
     it('logs in a user', function(done) {
       return account.login({
-        account_id: 'logged@in.com',
-        password: 'loggedpass'
+        account_id: 'logged@in.com'
       }, function(error, res) {
-        assert.ok(res.authenticated);
         assert.equal(issued_token, res.token);
-        return done();
-      });
-    });
-    it('returns `authenticated:false` if password is incorrect', function(done) {
-      return account.login({
-        account_id: 'logged@in.com',
-        password: 'incorrect'
-      }, function(error, res) {
-        assert.isFalse(res.authenticated);
         return done();
       });
     });
     return it('returns same token if a user already logged in', function(done) {
       return account.login({
-        account_id: 'logged@in.com',
-        password: 'loggedpass'
+        account_id: 'logged@in.com'
       }, function(error, res) {
-        assert.equal(res.token, issued_token);
-        return done();
+        return account.login({
+          account_id: 'logged@in.com'
+        }, function(error, res) {
+          assert.equal(res.token, issued_token);
+          return done();
+        });
       });
     });
   });
