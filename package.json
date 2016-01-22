@@ -1,6 +1,6 @@
 {
-  "name": "yt-seneca-account-plugin",
-  "version": "1.0.0",
+  "name": "yt-seneca-account",
+  "version": "0.7.0",
   "description": "A Seneca plugin handling auth, login, user records etc (with JWT tokens)",
   "directories": {
     "test": "test"
