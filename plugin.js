@@ -32,7 +32,9 @@
     seneca.add("role:" + role + ",cmd:login", login(seneca, options));
     seneca.add("role:" + role + ",cmd:register", register(seneca, options));
     seneca.add("role:" + role + ",cmd:delete", delete_(seneca, options));
-    return role;
+    return {
+      name: role
+    };
   };
 
 }).call(this);
