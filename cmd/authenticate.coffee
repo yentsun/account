@@ -17,9 +17,6 @@ module.exports = (seneca, options) ->
                     bcrypt.compare password, account.hash, (error, passed) ->
                         if error
                             seneca.log.error 'password check failed:', error.message
-                            seneca.act 'role:error,cmd:register',
-                                from: 'account.authenticate.bcrypt.compare',
-                                message: error.message
                             respond null, response
                         else
                             seneca.log.debug 'password check returned', passed

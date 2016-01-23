@@ -9,13 +9,6 @@
       return account_records.remove$(id, function(error) {
         if (error) {
           seneca.log.error('error while deleting account', id, error.message);
-          seneca.act('role:error,cmd:register', {
-            from: 'account.delete.entity.remove$',
-            message: error.message,
-            args: {
-              id: id
-            }
-          });
         }
         return respond(error, null);
       });

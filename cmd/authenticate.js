@@ -23,10 +23,6 @@
             return bcrypt.compare(password, account.hash, function(error, passed) {
               if (error) {
                 seneca.log.error('password check failed:', error.message);
-                seneca.act('role:error,cmd:register', {
-                  from: 'account.authenticate.bcrypt.compare',
-                  message: error.message
-                });
                 return respond(null, response);
               } else {
                 seneca.log.debug('password check returned', passed);

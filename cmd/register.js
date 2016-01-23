@@ -44,19 +44,11 @@
           return bcrypt.genSalt(10, function(error, salt) {
             if (error) {
               seneca.log.error('salt generation failed:', error.message);
-              seneca.act('role:error,cmd:register', {
-                from: 'account.register.bcrypt.genSalt',
-                message: error.message
-              });
               return respond(error, null);
             }
             return bcrypt.hash(password, salt, function(error, hash) {
               if (error) {
                 seneca.log.error('password hash failed:', error.message);
-                seneca.act('role:error,cmd:register', {
-                  from: 'account.register.bcrypt.hash',
-                  message: error.message
-                });
                 return respond(error, null);
               }
               seneca.log.debug('assigning starter role', starter_role);
@@ -64,14 +56,6 @@
                 var new_account;
                 if (error) {
                   seneca.log.error('adding starter role to new account failed:', error.message);
-                  seneca.act('role:error,cmd:register', {
-                    from: 'account.register.acl.addUserRoles',
-                    message: error.message,
-                    args: {
-                      email: email,
-                      role: starter_role
-                    }
-                  });
                   return respond(error, null);
                 } else {
                   new_account = seneca.make('account');
@@ -81,13 +65,6 @@
                   return new_account.save$(function(error, saved_account) {
                     if (error) {
                       seneca.log.error('new account record failed:', error.message);
-                      seneca.act('role:error,cmd:register', {
-                        from: 'account.register.new_account.save$',
-                        message: error.message,
-                        args: {
-                          new_account: new_account
-                        }
-                      });
                       respond(error, null);
                     }
                     if (saved_account) {

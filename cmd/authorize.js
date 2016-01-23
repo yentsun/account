@@ -21,10 +21,6 @@
         var account_id;
         if (error) {
           seneca.log.debug('token verification error', error.message);
-          seneca.act('role:error,cmd:register', {
-            from: 'account.authorize.jwt.verify',
-            message: error.message
-          });
           return respond(null, response);
         }
         seneca.log.debug('token verified');

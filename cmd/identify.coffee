@@ -6,11 +6,6 @@ module.exports = (seneca, options) ->
         account_records.list$ {email: email}, (error, accounts) ->
             if error
                 seneca.log.error 'error while loading account', email, error.message
-                seneca.act 'role:error,cmd:register',
-                    from: 'account.identify.entity.load$',
-                    message: error.message
-                    args:
-                        email: email
                 respond null, null
             else
                 respond null, accounts[0]
