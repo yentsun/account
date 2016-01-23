@@ -3,22 +3,24 @@
   module.exports = function(seneca, options) {
     var cmd_identify;
     cmd_identify = function(msg, respond) {
-      var account_records, id;
-      id = msg.account_id;
+      var account_records, email;
+      email = msg.email;
       account_records = seneca.make('account');
-      return account_records.load$(id, function(error, account) {
+      return account_records.list$({
+        email: email
+      }, function(error, accounts) {
         if (error) {
-          seneca.log.error('error while loading account', id, error.message);
+          seneca.log.error('error while loading account', email, error.message);
           seneca.act('role:error,cmd:register', {
             from: 'account.identify.entity.load$',
             message: error.message,
             args: {
-              id: id
+              email: email
             }
           });
           return respond(null, null);
         } else {
-          return respond(null, account);
+          return respond(null, accounts[0]);
         }
       });
     };

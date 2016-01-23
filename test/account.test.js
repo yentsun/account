@@ -57,11 +57,11 @@
         email: 'good@email.com',
         password: 'pass'
       }, function(error, new_account) {
-        assert.equal(new_account.id, 'good@email.com');
+        assert.equal(new_account.email, 'good@email.com');
         assert.isNull(error);
         assert.isUndefined(new_account.password);
         assert.equal(new_account.registered_at, moment().format());
-        return acl.userRoles(new_account.id, function(error, roles) {
+        return acl.userRoles(new_account.email, function(error, roles) {
           assert.include(roles, 'player');
           return done();
         });
@@ -176,7 +176,7 @@
     });
     it('returns true if password is correct', function(done) {
       return account.authenticate({
-        account_id: email,
+        email: email,
         password: 'somepassword'
       }, function(error, result) {
         assert.isTrue(result.authenticated);
@@ -185,7 +185,7 @@
     });
     it('returns false if password is bad', function(done) {
       return account.authenticate({
-        account_id: email,
+        email: email,
         password: 'bad'
       }, function(error, result) {
         assert.isFalse(result.authenticated);
@@ -194,7 +194,7 @@
     });
     it('returns false if password is not sent', function(done) {
       return account.authenticate({
-        account_id: email
+        email: email
       }, function(error, result) {
         assert.isFalse(result.authenticated);
         return done();
@@ -202,7 +202,7 @@
     });
     it('returns false if account is unidentified', function(done) {
       return account.authenticate({
-        account_id: 'doesntexist',
+        email: 'doesntexist',
         password: 'doesntmatter'
       }, function(error, result) {
         assert.isFalse(result.identified);
@@ -212,7 +212,7 @@
     });
     return it('returns false if password sent is a float', function(done) {
       return account.authenticate({
-        account_id: email,
+        email: email,
         password: 20.00
       }, function(error, result) {
         assert.isFalse(result.authenticated);
@@ -222,8 +222,9 @@
   });
 
   describe('identify', function() {
-    var email, hash;
+    var email, hash, id;
     hash = null;
+    id = null;
     email = 'another@kid.com';
     before(function(done) {
       return account.register({
@@ -231,21 +232,23 @@
         password: 'somepassword'
       }, function(error, res) {
         hash = res.password_hash;
+        id = res.id;
         return done();
       });
     });
     it('returns account info if there is one', function(done) {
       return account.identify({
-        account_id: email
+        email: email
       }, function(error, acc) {
-        assert.equal(email, acc.id);
+        assert.equal(email, acc.email);
         assert.equal(hash, acc.password_hash);
+        assert.equal(id, acc.id);
         return done();
       });
     });
     it('returns null if there is no account', function(done) {
       return account.identify({
-        account_id: 'no@account.com'
+        email: 'no@account.com'
       }, function(error, res) {
         assert.equal(null, res);
         return done();
@@ -253,13 +256,13 @@
     });
     return it('returns null if there was an error while loading record', function(done) {
       var stub;
-      stub = sinon.stub(seneca_entity, 'load$', function(id, callback) {
+      stub = sinon.stub(seneca_entity, 'list$', function(filter, callback) {
         var error;
         error = new Error('entity load error');
         return callback(error);
       });
       return account.identify({
-        account_id: email
+        email: email
       }, function(error, res) {
         assert.isNull(res);
         stub.restore();
@@ -273,7 +276,7 @@
     issued_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.' + 'eyJpZCI6ImxvZ2dlZEBpbi5jb20ifQ.' + 'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs';
     it('logs in a user', function(done) {
       return account.login({
-        account_id: 'logged@in.com'
+        email: 'logged@in.com'
       }, function(error, res) {
         assert.equal(issued_token, res.token);
         return done();
@@ -281,10 +284,10 @@
     });
     return it('returns same token if a user already logged in', function(done) {
       return account.login({
-        account_id: 'logged@in.com'
+        email: 'logged@in.com'
       }, function(error, res) {
         return account.login({
-          account_id: 'logged@in.com'
+          email: 'logged@in.com'
         }, function(error, res) {
           assert.equal(res.token, issued_token);
           return done();
@@ -318,7 +321,7 @@
       }, function(error, res) {
         assert.isTrue(res.authorized);
         assert.isTrue(res.token_verified);
-        assert.equal(res.account_id, 'authorized@player.com');
+        assert.equal(res.identified_by, 'authorized@player.com');
         return done();
       });
     });
@@ -329,7 +332,7 @@
         action: 'delete'
       }, function(error, res) {
         assert.isFalse(res.authorized);
-        assert.equal(res.account_id, 'authorized@player.com');
+        assert.equal(res.identified_by, 'authorized@player.com');
         return done();
       });
     });
@@ -397,7 +400,7 @@
           password: 'authpass'
         }, function(error, res) {
           return account.identify({
-            account_id: 'victim@player.com'
+            email: 'victim@player.com'
           }, function(error, res) {
             assert.equal(res.id, 'victim@player.com');
             return done();
@@ -407,21 +410,21 @@
     });
     it('deletes a registered account and makes sure it is not present any more', function(done) {
       return account["delete"]({
-        account_id: 'victim@player.com'
+        email: 'victim@player.com'
       }, function(error, res) {
         assert.isNull(error);
         assert.isNull(res);
         return account.identify({
-          account_id: 'victim@player.com'
+          email: 'victim@player.com'
         }, function(error, res) {
-          assert.isNull(res);
+          assert.notOk(res);
           return done();
         });
       });
     });
     it('returns nothing id there is no such account', function(done) {
       return account["delete"]({
-        account_id: 'stranger@player.com'
+        email: 'stranger@player.com'
       }, function(error, res) {
         assert.isNull(error);
         assert.isNull(res);
@@ -436,7 +439,7 @@
         return callback(error);
       });
       return account["delete"]({
-        account_id: 'victim@player.com'
+        email: 'victim@player.com'
       }, function(error, res) {
         stub.restore();
         assert.equal(error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.');

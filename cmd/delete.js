@@ -4,7 +4,7 @@
     var cmd_delete;
     cmd_delete = function(msg, respond) {
       var account_records, id;
-      id = msg.account_id;
+      id = msg.email;
       account_records = seneca.make('account');
       return account_records.remove$(id, function(error) {
         if (error) {

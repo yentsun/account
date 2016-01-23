@@ -21,9 +21,9 @@ module.exports = (seneca, options) ->
             return respond null, null
 
         # check for registered accounts
-        account.identify {account_id: email}, (error, account) ->
+        account.identify {email: email}, (error, account) ->
             if account
-                seneca.log.warn 'account already registered', account.id
+                seneca.log.warn 'account already registered', account.email
                 respond null, null
             else
                 password = args.password
@@ -61,7 +61,7 @@ module.exports = (seneca, options) ->
                             else
                                 # create new user record
                                 new_account = seneca.make 'account'
-                                new_account.id = email
+                                new_account.email = email
                                 new_account.password_hash = hash
                                 new_account.registered_at = do moment().format
                                 new_account.save$ (error, saved_account) ->

@@ -42,11 +42,11 @@ describe 'register', () ->
     it 'registers new account and assert no password in response', (done) ->
         account.register {email: 'good@email.com', password: 'pass'},
             (error, new_account) ->
-                assert.equal new_account.id, 'good@email.com'
+                assert.equal new_account.email, 'good@email.com'
                 assert.isNull error
                 assert.isUndefined new_account.password
                 assert.equal new_account.registered_at, do moment().format
-                acl.userRoles new_account.id, (error, roles) ->
+                acl.userRoles new_account.email, (error, roles) ->
                     assert.include roles, 'player'
                     do done
 
@@ -117,29 +117,29 @@ describe 'authenticate', () ->
             do done
 
     it 'returns true if password is correct', (done) ->
-        account.authenticate {account_id: email, password: 'somepassword'}, (error, result) ->
+        account.authenticate {email: email, password: 'somepassword'}, (error, result) ->
             assert.isTrue result.authenticated
             do done
 
     it 'returns false if password is bad', (done) ->
-        account.authenticate {account_id: email, password: 'bad'}, (error, result) ->
+        account.authenticate {email: email, password: 'bad'}, (error, result) ->
             assert.isFalse result.authenticated
             do done
 
     it 'returns false if password is not sent', (done) ->
-        account.authenticate {account_id: email}, (error, result) ->
+        account.authenticate {email: email}, (error, result) ->
             assert.isFalse result.authenticated
             do done
 
     it 'returns false if account is unidentified', (done) ->
-        account.authenticate {account_id: 'doesntexist', password: 'doesntmatter'}, (error, result) ->
+        account.authenticate {email: 'doesntexist', password: 'doesntmatter'}, (error, result) ->
             assert.isFalse result.identified
             assert.isFalse result.authenticated
             do done
 
     it 'returns false if password sent is a float', (done) ->
         # this is needed to trigger `bcrypt.compare` error branch
-        account.authenticate {account_id: email, password: 20.00}, (error, result) ->
+        account.authenticate {email: email, password: 20.00}, (error, result) ->
             assert.isFalse result.authenticated
             do done
 
@@ -147,29 +147,32 @@ describe 'authenticate', () ->
 describe 'identify', () ->
 
     hash = null
+    id = null
     email = 'another@kid.com'
 
     before (done) ->
         account.register {email: email, password: 'somepassword'}, (error, res) ->
             hash = res.password_hash
+            id = res.id
             do done
 
     it 'returns account info if there is one', (done) ->
-        account.identify {account_id: email}, (error, acc) ->
-            assert.equal email, acc.id
+        account.identify {email: email}, (error, acc) ->
+            assert.equal email, acc.email
             assert.equal hash, acc.password_hash
+            assert.equal id, acc.id
             do done
 
     it 'returns null if there is no account', (done) ->
-        account.identify {account_id: 'no@account.com'}, (error, res) ->
+        account.identify {email: 'no@account.com'}, (error, res) ->
             assert.equal null, res
             do done
 
     it 'returns null if there was an error while loading record', (done) ->
-        stub = sinon.stub seneca_entity, 'load$', (id, callback) ->
+        stub = sinon.stub seneca_entity, 'list$', (filter, callback) ->
             error = new Error 'entity load error'
             callback error
-        account.identify {account_id: email}, (error, res) ->
+        account.identify {email: email}, (error, res) ->
             assert.isNull res
             do stub.restore
             do done
@@ -183,13 +186,13 @@ describe 'login', () ->
         'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs'
 
     it 'logs in a user', (done) ->
-        account.login {account_id: 'logged@in.com'}, (error, res) ->
+        account.login {email: 'logged@in.com'}, (error, res) ->
             assert.equal issued_token, res.token
             do done
 
     it 'returns same token if a user already logged in', (done) ->
-        account.login {account_id: 'logged@in.com'}, (error, res) ->
-            account.login {account_id: 'logged@in.com'}, (error, res) ->
+        account.login {email: 'logged@in.com'}, (error, res) ->
+            account.login {email: 'logged@in.com'}, (error, res) ->
                 assert.equal res.token, issued_token
                 do done
 
@@ -212,13 +215,13 @@ describe 'authorize', () ->
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
             assert.isTrue res.authorized
             assert.isTrue res.token_verified
-            assert.equal res.account_id, 'authorized@player.com'
+            assert.equal res.identified_by, 'authorized@player.com'
             do done
 
     it 'does not allow a registered player to delete his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'delete'}, (error, res) ->
             assert.isFalse res.authorized
-            assert.equal res.account_id, 'authorized@player.com'
+            assert.equal res.identified_by, 'authorized@player.com'
             do done
 
     it 'does not authorize with a bad token', (done) ->
@@ -265,20 +268,20 @@ describe 'delete', () ->
 
     before: (done) ->
         account.register {email: 'victim@player.com', password: 'authpass'}, (error, res) ->
-            account.identify {account_id: 'victim@player.com'}, (error, res) ->
+            account.identify {email: 'victim@player.com'}, (error, res) ->
                 assert.equal res.id, 'victim@player.com'
                 do done
 
     it 'deletes a registered account and makes sure it is not present any more', (done) ->
-        account.delete {account_id: 'victim@player.com'}, (error, res) ->
+        account.delete {email: 'victim@player.com'}, (error, res) ->
             assert.isNull error
             assert.isNull res
-            account.identify {account_id: 'victim@player.com'}, (error, res) ->
-                assert.isNull res
+            account.identify {email: 'victim@player.com'}, (error, res) ->
+                assert.notOk res
                 do done
 
     it 'returns nothing id there is no such account', (done) ->
-        account.delete {account_id: 'stranger@player.com'}, (error, res) ->
+        account.delete {email: 'stranger@player.com'}, (error, res) ->
             assert.isNull error
             assert.isNull res
             do done
@@ -287,7 +290,7 @@ describe 'delete', () ->
         stub = sinon.stub seneca_entity, 'remove$', (id, callback) ->
             error = new Error 'entity removal error'
             callback error
-        account.delete {account_id: 'victim@player.com'}, (error, res) ->
+        account.delete {email: 'victim@player.com'}, (error, res) ->
             do stub.restore
             assert.equal error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.'
             assert.isNull res

@@ -3,15 +3,15 @@ bcrypt = require 'bcryptjs'
 module.exports = (seneca, options) ->
 
     cmd_authenticate = (params, respond) ->
-        account_id = params.account_id
+        account_id = params.email
         password = params.password
         response =
-            account_id: account_id
+            email: account_id
             authenticated: false
 
         if account_id and password
             # get the account
-            seneca.act 'role:account,cmd:identify', {account_id: account_id}, (error, account) ->
+            seneca.act 'role:account,cmd:identify', {email: account_id}, (error, account) ->
                 if account
                     seneca.log.debug 'account identified', account.id
                     bcrypt.compare password, account.password_hash, (error, passed) ->

@@ -35,13 +35,13 @@
           return respond(null, response);
         }
         return seneca.act('role:account,cmd:identify', {
-          account_id: account_id
+          email: account_id
         }, function(error, account) {
           if (account) {
-            response.account_id = account.id;
-            seneca.log.debug('account identified', account.id);
-            seneca.log.debug('checking access', account.id, resource, action);
-            return acl.isAllowed(account.id, resource, action, function(error, res) {
+            response.identified_by = account_id;
+            seneca.log.debug('account identified', account_id);
+            seneca.log.debug('checking access', account_id, resource, action);
+            return acl.isAllowed(account_id, resource, action, function(error, res) {
               if (error) {
                 seneca.log.error('access check failed', error);
                 return respond(null, response);

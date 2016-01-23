@@ -8,7 +8,7 @@
     var cmd_login;
     cmd_login = function(params, respond) {
       var account_id, res, secret;
-      account_id = params.account_id;
+      account_id = params.email;
       res = {};
       secret = options.token_secret;
       res.token = jwt.sign({

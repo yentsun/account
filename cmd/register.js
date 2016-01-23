@@ -28,11 +28,11 @@
         return respond(null, null);
       }
       return account.identify({
-        account_id: email
+        email: email
       }, function(error, account) {
         var password;
         if (account) {
-          seneca.log.warn('account already registered', account.id);
+          seneca.log.warn('account already registered', account.email);
           return respond(null, null);
         } else {
           password = args.password;
@@ -75,7 +75,7 @@
                   return respond(error, null);
                 } else {
                   new_account = seneca.make('account');
-                  new_account.id = email;
+                  new_account.email = email;
                   new_account.password_hash = hash;
                   new_account.registered_at = moment().format();
                   return new_account.save$(function(error, saved_account) {
