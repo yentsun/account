@@ -20,7 +20,7 @@
         }, function(error, account) {
           if (account) {
             seneca.log.debug('account identified', account.id);
-            return bcrypt.compare(password, account.password_hash, function(error, passed) {
+            return bcrypt.compare(password, account.hash, function(error, passed) {
               if (error) {
                 seneca.log.error('password check failed:', error.message);
                 seneca.act('role:error,cmd:register', {

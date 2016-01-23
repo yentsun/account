@@ -231,7 +231,7 @@
         email: email,
         password: 'somepassword'
       }, function(error, res) {
-        hash = res.password_hash;
+        hash = res.hash;
         id = res.id;
         return done();
       });
@@ -241,7 +241,7 @@
         email: email
       }, function(error, acc) {
         assert.equal(email, acc.email);
-        assert.equal(hash, acc.password_hash);
+        assert.equal(hash, acc.hash);
         assert.equal(id, acc.id);
         return done();
       });

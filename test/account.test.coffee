@@ -152,14 +152,14 @@ describe 'identify', () ->
 
     before (done) ->
         account.register {email: email, password: 'somepassword'}, (error, res) ->
-            hash = res.password_hash
+            hash = res.hash
             id = res.id
             do done
 
     it 'returns account info if there is one', (done) ->
         account.identify {email: email}, (error, acc) ->
             assert.equal email, acc.email
-            assert.equal hash, acc.password_hash
+            assert.equal hash, acc.hash
             assert.equal id, acc.id
             do done
 

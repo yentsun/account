@@ -14,7 +14,7 @@ module.exports = (seneca, options) ->
             seneca.act 'role:account,cmd:identify', {email: account_id}, (error, account) ->
                 if account
                     seneca.log.debug 'account identified', account.id
-                    bcrypt.compare password, account.password_hash, (error, passed) ->
+                    bcrypt.compare password, account.hash, (error, passed) ->
                         if error
                             seneca.log.error 'password check failed:', error.message
                             seneca.act 'role:error,cmd:register',

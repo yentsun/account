@@ -62,7 +62,7 @@ module.exports = (seneca, options) ->
                                 # create new user record
                                 new_account = seneca.make 'account'
                                 new_account.email = email
-                                new_account.password_hash = hash
+                                new_account.hash = hash
                                 new_account.registered_at = do moment().format
                                 new_account.save$ (error, saved_account) ->
                                     if error
