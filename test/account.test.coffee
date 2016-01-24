@@ -50,20 +50,20 @@ describe 'register', () ->
                     assert.include roles, 'player'
                     do done
 
-    it 'silently fails if email is bad', (done) ->
+    it 'fails if email is invalid', (done) ->
         account.register {email: 'bad_email.com', password: 'pass'},
-            (error, new_account) ->
-                assert.isNull new_account
+            (error, res) ->
                 assert.isNull error
+                assert.equal res.message, 'invalid email'
                 do done
 
-    it 'silently fails when player is already registered', (done) ->
+    it 'fails when player is already registered', (done) ->
         account.register {email: 'already@there.com'}, (error, new_account) ->
             if new_account
                 account.register {email: 'already@there.com', password: 'pass'},
-                    (error, new_account) ->
-                        assert.isNull new_account
+                    (error, res) ->
                         assert.isNull error
+                        assert.equal res.message, 'account already registered'
                         do done
 
     it 'generates new password if its not set', (done) ->

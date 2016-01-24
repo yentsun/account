@@ -67,17 +67,17 @@
         });
       });
     });
-    it('silently fails if email is bad', function(done) {
+    it('fails if email is invalid', function(done) {
       return account.register({
         email: 'bad_email.com',
         password: 'pass'
-      }, function(error, new_account) {
-        assert.isNull(new_account);
+      }, function(error, res) {
         assert.isNull(error);
+        assert.equal(res.message, 'invalid email');
         return done();
       });
     });
-    it('silently fails when player is already registered', function(done) {
+    it('fails when player is already registered', function(done) {
       return account.register({
         email: 'already@there.com'
       }, function(error, new_account) {
@@ -85,9 +85,9 @@
           return account.register({
             email: 'already@there.com',
             password: 'pass'
-          }, function(error, new_account) {
-            assert.isNull(new_account);
+          }, function(error, res) {
             assert.isNull(error);
+            assert.equal(res.message, 'account already registered');
             return done();
           });
         }

@@ -17,14 +17,16 @@ module.exports = (seneca, options) ->
 
         # check validity
         if !validator.isEmail email
-            seneca.log.warn 'bad email', email
-            return respond null, null
+            seneca.log.warn 'invalid email', email
+            return respond null,
+                message: 'invalid email'
 
         # check for registered accounts
         account.identify {email: email}, (error, account) ->
             if account
                 seneca.log.warn 'account already registered', account.email
-                respond null, null
+                respond null,
+                    message: 'account already registered'
             else
                 password = args.password
                 if !password

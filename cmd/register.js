@@ -24,8 +24,10 @@
       var email;
       email = args.email;
       if (!validator.isEmail(email)) {
-        seneca.log.warn('bad email', email);
-        return respond(null, null);
+        seneca.log.warn('invalid email', email);
+        return respond(null, {
+          message: 'invalid email'
+        });
       }
       return account.identify({
         email: email
@@ -33,7 +35,9 @@
         var password;
         if (account) {
           seneca.log.warn('account already registered', account.email);
-          return respond(null, null);
+          return respond(null, {
+            message: 'account already registered'
+          });
         } else {
           password = args.password;
           if (!password) {
