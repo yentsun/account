@@ -22,7 +22,7 @@
 
   ac_list = [
     {
-      roles: ['player'],
+      roles: ['new'],
       allows: [
         {
           resources: 'profile',
@@ -37,7 +37,7 @@
     token_secret: 'secret',
     jwtNoTimestamp: true,
     acl: acl,
-    starter_role: 'player'
+    starter_role: 'new'
   };
 
   log_mode = process.env.TEST_LOG_MODE || 'quiet';
@@ -61,10 +61,8 @@
         assert.isNull(error);
         assert.isUndefined(new_account.password);
         assert.equal(new_account.registered_at, moment().format());
-        return acl.userRoles(new_account.email, function(error, roles) {
-          assert.include(roles, 'player');
-          return done();
-        });
+        assert.equal(new_account.role, 'new');
+        return done();
       });
     });
     it('fails if email is invalid', function(done) {
@@ -131,7 +129,7 @@
         return done();
       });
     });
-    it('fails if there is a storage error', function(done) {
+    return it('fails if there is a storage error', function(done) {
       var stub;
       stub = sinon.stub(seneca_entity, 'save$', function(callback) {
         return callback(new Error('seneca save$ error'));
@@ -143,21 +141,6 @@
         stub.restore();
         assert.isNull(new_user);
         assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: seneca save$ error.');
-        return done();
-      });
-    });
-    return it('fails if there is an acl error', function(done) {
-      var stub;
-      stub = sinon.stub(acl, 'addUserRoles', function(id, roles, callback) {
-        return callback(new Error('acl error while adding roles'));
-      });
-      return account.register({
-        email: 'good3@email.com',
-        password: 'pass'
-      }, function(error, new_user) {
-        stub.restore();
-        assert.isNull(new_user);
-        assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: acl error while adding roles.');
         return done();
       });
     });
@@ -380,13 +363,28 @@
         return done();
       });
     });
-    return it('denies an anonymous user to view profile', function(done) {
+    it('denies an anonymous user to view profile', function(done) {
       return account.authorize({
         token: null,
         resource: 'profile',
         permission: 'view'
       }, function(error, res) {
         assert.isFalse(res.authorized);
+        return done();
+      });
+    });
+    return it('fails if there is an acl error on adding a role', function(done) {
+      sinon.stub(acl, 'addUserRoles', function(id, roles, callback) {
+        return callback(new Error('acl error while adding roles'));
+      });
+      return account.authorize({
+        token: token,
+        resource: 'profile',
+        action: 'get'
+      }, function(error, res) {
+        assert.isNull(res);
+        assert.include(error.message, 'acl error while adding roles');
+        sinon.restore();
         return done();
       });
     });

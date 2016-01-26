@@ -37,14 +37,20 @@
             response.identified_by = account_id;
             seneca.log.debug('account identified', account_id);
             seneca.log.debug('checking access', account_id, resource, action);
-            return acl.isAllowed(account_id, resource, action, function(error, res) {
+            return acl.addUserRoles(account_id, [account.role], function(error) {
               if (error) {
-                seneca.log.error('access check failed', error);
-                return respond(null, response);
-              } else {
-                response.authorized = res;
-                return respond(null, response);
+                seneca.log.error('adding role to account failed:', error.message);
+                return respond(error, null);
               }
+              return acl.isAllowed(account_id, resource, action, function(error, res) {
+                if (error) {
+                  seneca.log.error('access check failed', error);
+                  return respond(null, response);
+                } else {
+                  response.authorized = res;
+                  return respond(null, response);
+                }
+              });
             });
           } else {
             seneca.log.debug('authorization failed, unidentified account', account_id);

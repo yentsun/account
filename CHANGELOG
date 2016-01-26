@@ -2,6 +2,9 @@
 -----
 - password reset
 
+0.7.6
+-----
+- `status` field to the account object
 
 0.7.5
 -----

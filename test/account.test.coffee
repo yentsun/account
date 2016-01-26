@@ -11,7 +11,7 @@ seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
 ac_list = [
-    roles: ['player']
+    roles: ['new']
     allows: [
         resources: 'profile'
         permissions: 'get'
@@ -23,7 +23,7 @@ options =
     token_secret: 'secret'
     jwtNoTimestamp: true
     acl: acl
-    starter_role: 'player'
+    starter_role: 'new'
 
 log_mode = process.env.TEST_LOG_MODE or 'quiet'
 
@@ -46,9 +46,8 @@ describe 'register', () ->
                 assert.isNull error
                 assert.isUndefined new_account.password
                 assert.equal new_account.registered_at, do moment().format
-                acl.userRoles new_account.email, (error, roles) ->
-                    assert.include roles, 'player'
-                    do done
+                assert.equal new_account.role, 'new'
+                do done
 
     it 'fails if email is invalid', (done) ->
         account.register {email: 'bad_email.com', password: 'pass'},
@@ -96,15 +95,6 @@ describe 'register', () ->
             do stub.restore
             assert.isNull new_user
             assert.equal error.message, 'seneca: Action cmd:register,role:account failed: seneca save$ error.'
-            do done
-
-    it 'fails if there is an acl error', (done) ->
-        stub = sinon.stub acl, 'addUserRoles', (id, roles, callback) ->
-            callback new Error 'acl error while adding roles'
-        account.register {email: 'good3@email.com', password: 'pass'}, (error, new_user) ->
-            do stub.restore
-            assert.isNull new_user
-            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: acl error while adding roles.'
             do done
 
 
@@ -261,6 +251,15 @@ describe 'authorize', () ->
     it 'denies an anonymous user to view profile', (done) ->
         account.authorize {token: null, resource: 'profile', permission: 'view'}, (error, res) ->
             assert.isFalse res.authorized
+            do done
+
+    it 'fails if there is an acl error on adding a role', (done) ->
+        sinon.stub acl, 'addUserRoles', (id, roles, callback) ->
+            callback new Error 'acl error while adding roles'
+        account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
+            assert.isNull res
+            assert.include error.message, 'acl error while adding roles'
+            do sinon.restore
             do done
 
 

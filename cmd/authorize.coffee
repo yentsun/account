@@ -33,13 +33,19 @@ module.exports = (seneca, options) ->
                     response.identified_by = account_id
                     seneca.log.debug 'account identified', account_id
                     seneca.log.debug 'checking access', account_id, resource, action
-                    acl.isAllowed account_id, resource, action, (error, res) ->
+
+                    acl.addUserRoles account_id, [account.role], (error) ->
                         if error
-                            seneca.log.error 'access check failed', error
-                            respond null, response
-                        else
-                            response.authorized = res
-                            respond null, response
+                            seneca.log.error 'adding role to account failed:', error.message
+                            return respond error, null
+
+                        acl.isAllowed account_id, resource, action, (error, res) ->
+                            if error
+                                seneca.log.error 'access check failed', error
+                                respond null, response
+                            else
+                                response.authorized = res
+                                respond null, response
                 else
                     seneca.log.debug 'authorization failed, unidentified account', account_id
                     respond null, response

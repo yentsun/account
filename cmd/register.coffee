@@ -42,23 +42,17 @@ module.exports = (seneca, options) ->
                         if error
                             seneca.log.error 'password hash failed:', error.message
                             return respond error, null
-
-                        seneca.log.debug 'assigning starter role', starter_role
-                        acl.addUserRoles email, [starter_role], (error) ->
+                        # create new user record
+                        new_account = seneca.make 'account'
+                        new_account.email = email
+                        new_account.hash = hash
+                        new_account.registered_at = do moment().format
+                        new_account.role = starter_role
+                        new_account.save$ (error, saved_account) ->
                             if error
-                                seneca.log.error 'adding starter role to new account failed:', error.message
-                                return respond error, null
-                            else
-                                # create new user record
-                                new_account = seneca.make 'account'
-                                new_account.email = email
-                                new_account.hash = hash
-                                new_account.registered_at = do moment().format
-                                new_account.save$ (error, saved_account) ->
-                                    if error
-                                        seneca.log.error 'new account record failed:', error.message
-                                        respond error, null
-                                    if saved_account
-                                        saved_account.password = password if password_generated
-                                        respond null, saved_account
+                                seneca.log.error 'new account record failed:', error.message
+                                respond error, null
+                            if saved_account
+                                saved_account.password = password if password_generated
+                                respond null, saved_account
     cmd_register

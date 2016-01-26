@@ -51,33 +51,26 @@
               return respond(error, null);
             }
             return bcrypt.hash(password, salt, function(error, hash) {
+              var new_account;
               if (error) {
                 seneca.log.error('password hash failed:', error.message);
                 return respond(error, null);
               }
-              seneca.log.debug('assigning starter role', starter_role);
-              return acl.addUserRoles(email, [starter_role], function(error) {
-                var new_account;
+              new_account = seneca.make('account');
+              new_account.email = email;
+              new_account.hash = hash;
+              new_account.registered_at = moment().format();
+              new_account.role = starter_role;
+              return new_account.save$(function(error, saved_account) {
                 if (error) {
-                  seneca.log.error('adding starter role to new account failed:', error.message);
-                  return respond(error, null);
-                } else {
-                  new_account = seneca.make('account');
-                  new_account.email = email;
-                  new_account.hash = hash;
-                  new_account.registered_at = moment().format();
-                  return new_account.save$(function(error, saved_account) {
-                    if (error) {
-                      seneca.log.error('new account record failed:', error.message);
-                      respond(error, null);
-                    }
-                    if (saved_account) {
-                      if (password_generated) {
-                        saved_account.password = password;
-                      }
-                      return respond(null, saved_account);
-                    }
-                  });
+                  seneca.log.error('new account record failed:', error.message);
+                  respond(error, null);
+                }
+                if (saved_account) {
+                  if (password_generated) {
+                    saved_account.password = password;
+                  }
+                  return respond(null, saved_account);
                 }
               });
             });
