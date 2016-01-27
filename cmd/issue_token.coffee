@@ -2,11 +2,13 @@ jwt = require 'jsonwebtoken'
 
 module.exports = (seneca, options) ->
 
-    cmd_issue_token = (params, respond) ->
-        account_id = params.email
+    cmd_issue_token = (args, respond) ->
+        account_id = args.account_id
+        reason = args.reason or 'auth'
         res = {}
         secret = options.token_secret
-        res.token = jwt.sign {id: account_id},
+        res.reason = reason
+        res.token = jwt.sign {id: account_id, reason: reason},
             secret,
             noTimestamp: options.jwtNoTimestamp
         respond null, res

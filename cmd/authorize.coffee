@@ -27,12 +27,9 @@ module.exports = (seneca, options) ->
                 seneca.log.error 'failed to decode id'
                 return respond null, response
 
-            # re-identify the user to check his permissions and current status
-            seneca.act 'role:account,cmd:identify', {email: account_id}, (error, account) ->
+            seneca.act 'role:account,cmd:get', {account_id: account_id}, (error, account) ->
                 if account
-                    response.identified_by = account_id
-                    seneca.log.debug 'account identified', account_id
-                    seneca.log.debug 'checking access', account_id, resource, action
+                    seneca.log.debug 'checking access', account.id, resource, action
 
                     acl.addUserRoles account_id, [account.role], (error) ->
                         if error

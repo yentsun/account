@@ -1,13 +1,13 @@
 module.exports = (seneca, options) ->
 
-    cmd_identify = (args, respond) ->
-        email = args.email
+    cmd_get = (args, respond) ->
+        id = args.account_id
         account_records = seneca.make 'account'
-        account_records.list$ {email: email}, (error, accounts) ->
+        account_records.load$ id, (error, account) ->
             if error
                 seneca.log.error 'error while loading account', email, error.message
                 respond null, null
             else
-                respond null, accounts[0]
+                respond null, account
 
-    cmd_identify
+    cmd_get

@@ -30,13 +30,11 @@
           seneca.log.error('failed to decode id');
           return respond(null, response);
         }
-        return seneca.act('role:account,cmd:identify', {
-          email: account_id
+        return seneca.act('role:account,cmd:get', {
+          account_id: account_id
         }, function(error, account) {
           if (account) {
-            response.identified_by = account_id;
-            seneca.log.debug('account identified', account_id);
-            seneca.log.debug('checking access', account_id, resource, action);
+            seneca.log.debug('checking access', account.id, resource, action);
             return acl.addUserRoles(account_id, [account.role], function(error) {
               if (error) {
                 seneca.log.error('adding role to account failed:', error.message);

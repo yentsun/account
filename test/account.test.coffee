@@ -3,6 +3,7 @@ assert = require 'chai'
 bcrypt = require 'bcryptjs'
 sinon = require 'sinon'
 acl = require 'acl'
+jwt = require 'jsonwebtoken'
 moment = require 'moment'
 util = require '../util'
 acl_backend = new acl.memoryBackend()
@@ -18,9 +19,11 @@ ac_list = [
     ]
 ]
 
+token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
+
 options =
     test: true
-    token_secret: 'secret'
+    token_secret: token_secret
     jwtNoTimestamp: true
     acl: acl
     starter_role: 'new'
@@ -170,28 +173,32 @@ describe 'identify', () ->
 
 describe 'issue_token', () ->
 
-    issued_token =
-        'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.' +
-        'eyJpZCI6ImxvZ2dlZEBpbi5jb20ifQ.' +
-        'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs'
+    id = null
 
-    it 'logs in a user', (done) ->
-        account.issue_token {email: 'logged@in.com'}, (error, res) ->
-            assert.equal issued_token, res.token
+    before (done) ->
+        account.register {email: 'logged@in.com'}, (error, res) ->
+            id = res.id
             do done
 
-    it 'returns same token if a user already logged in', (done) ->
-        account.issue_token {email: 'logged@in.com'}, (error, res) ->
-            account.issue_token {email: 'logged@in.com'}, (error, res) ->
-                assert.equal res.token, issued_token
+    it 'logs in a user', (done) ->
+        account.issue_token {account_id: id}, (error, res) ->
+            jwt.verify res.token, token_secret, (error, decoded) ->
+                assert.equal decoded.id, id
+                assert.equal decoded.reason, 'auth'
+                assert.equal res.reason, 'auth'
+                do done
+
+    it 'returns a confirmation token', (done) ->
+        account.issue_token {account_id: id, reason: 'conf'}, (error, res) ->
+            jwt.verify res.token, token_secret, (error, decoded) ->
+                assert.equal decoded.id, id
+                assert.equal decoded.reason, 'conf'
                 do done
 
 
 describe 'authorize', () ->
 
-    token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-            'eyJpZCI6ImF1dGhvcml6ZWRAcGxheWVyLmNvbSJ9.' +
-            'WqzumznnQjadtYNUt_QYlbKEarmGT6I8Hvhre53UORU'
+    token = null
 
     before (before_done) ->
         acl.allow ac_list, (error) ->
@@ -199,19 +206,19 @@ describe 'authorize', () ->
                 seneca.log.error 'acl load failed: ', error
             else
                 account.register {email: 'authorized@player.com', password: 'authpass'}, (error, res) ->
-                    do before_done
+                    account.issue_token {account_id: res.id}, (error, res) ->
+                        token = res.token
+                        do before_done
 
     it 'allows a registered player to view his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
             assert.isTrue res.authorized
             assert.isTrue res.token_verified
-            assert.equal res.identified_by, 'authorized@player.com'
             do done
 
     it 'does not allow a registered player to delete his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'delete'}, (error, res) ->
             assert.isFalse res.authorized
-            assert.equal res.identified_by, 'authorized@player.com'
             do done
 
     it 'does not authorize with a bad token', (done) ->
@@ -221,10 +228,9 @@ describe 'authorize', () ->
             do done
 
     it 'does not authorize with a verified token of unknown account', (done) ->
-        account.authorize {token:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-            'eyJpZCI6InVua25vd25Aa2lkLmNvbSJ9.' +
-            'gLjI4tqAbmxS5xItMo2IuX2-3XxK0DHCR8q-SuiCkwk'}, (error, res) ->
+        account.issue_token {account_id: 'rubbish_acc_id'}, (error, res) ->
+            tkn = res.token
+            account.authorize {token: tkn}, (error, res) ->
                 assert.isTrue res.token_verified
                 assert.isFalse res.authorized
                 do done
@@ -232,8 +238,8 @@ describe 'authorize', () ->
     it 'does not authorize with a verified token that has no id field', (done) ->
         account.authorize {token:
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-            'eyJpZGUiOiJ3cm9uZ0BwbGF5ZXIuY29tIn0.' +
-            'DtlP8pMWiwbamLv1VMgCXvKFb0t0vF6jnNRsVBChWnI'}, (error, res) ->
+            'eyJydWJiaXNoIjo1MzM0NTN9.' +
+            '8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4'}, (error, res) ->
                 assert.isTrue res.token_verified
                 assert.isFalse res.authorized
                 do done
