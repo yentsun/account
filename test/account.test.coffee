@@ -23,10 +23,14 @@ token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
 
 options =
     test: true
-    token_secret: token_secret
-    jwtNoTimestamp: true
-    acl: acl
-    starter_role: 'new'
+
+    token:
+        secret: token_secret
+        jwtNoTimestamp: true
+    authorization:
+        acl: acl
+    registration:
+        starter_status: 'new'
 
 log_mode = process.env.TEST_LOG_MODE or 'quiet'
 
@@ -49,7 +53,7 @@ describe 'register', () ->
                 assert.isNull error
                 assert.isUndefined new_account.password
                 assert.equal new_account.registered_at, do moment().format
-                assert.equal new_account.role, 'new'
+                assert.equal new_account.status, 'new'
                 jwt.verify new_account.token, token_secret, (error, decoded) ->
                     assert.equal decoded.id, new_account.id
                     assert.equal decoded.reason, 'conf'
@@ -216,7 +220,6 @@ describe 'authorize', () ->
     it 'allows a registered player to view his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
             assert.isTrue res.authorized
-            assert.isTrue res.token_verified
             do done
 
     it 'does not allow a registered player to delete his profile', (done) ->
@@ -226,7 +229,6 @@ describe 'authorize', () ->
 
     it 'does not authorize with a bad token', (done) ->
         account.authorize {token: 'bad.token'}, (error, res) ->
-            assert.isFalse res.token_verified
             assert.isFalse res.authorized
             do done
 
@@ -234,7 +236,6 @@ describe 'authorize', () ->
         account.issue_token {account_id: 'rubbish_acc_id'}, (error, res) ->
             tkn = res.token
             account.authorize {token: tkn}, (error, res) ->
-                assert.isTrue res.token_verified
                 assert.isFalse res.authorized
                 do done
 
@@ -243,7 +244,6 @@ describe 'authorize', () ->
             'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
             'eyJydWJiaXNoIjo1MzM0NTN9.' +
             '8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4'}, (error, res) ->
-                assert.isTrue res.token_verified
                 assert.isFalse res.authorized
                 do done
 
@@ -252,7 +252,6 @@ describe 'authorize', () ->
             error = new Error 'an acl error'
             callback error
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isTrue res.token_verified
             assert.isFalse res.authorized
             do sinon.restore
             do done
@@ -271,26 +270,44 @@ describe 'authorize', () ->
             do sinon.restore
             do done
 
+
 describe 'confirm', () ->
 
-    before: (done) ->
-        account.register {email: 'confirmed@player.com', password: 'authpass'}, (error, res) ->
+    conf_token = null
+    rubb_token = null
+
+    before (done) ->
+        account.register {email: 'confirmed@user.com', password: 'authpass'}, (error, res) ->
+            console.log res
+            conf_token = res.token
+            account.issue_token {account_id: res.id, reason: 'rubb'}, (error, res) ->
+                rubb_token = res.token
             do done
 
     it 'confirms a new user by the token', (done) ->
-        do done
+        account.confirm {token: conf_token}, (error, conf_account) ->
+            assert.equal conf_account.email, 'confirmed@user.com'
+            assert.equal conf_account.status, 'confirmed'
+            do done
+
+    it 'fails to confirm if token has incorrect reason', (done) ->
+        account.confirm {token: rubb_token}, (error, res) ->
+            assert.equal res.message, 'token verification error'
+            do done
 
 
 describe 'delete', () ->
 
-    before: (done) ->
+    id = null
+
+    before (done) ->
         account.register {email: 'victim@player.com', password: 'authpass'}, (error, res) ->
             account.identify {email: 'victim@player.com'}, (error, res) ->
-                assert.equal res.id, 'victim@player.com'
+                id = res.id
                 do done
 
     it 'deletes a registered account and makes sure it is not present any more', (done) ->
-        account.delete {email: 'victim@player.com'}, (error, res) ->
+        account.delete {account_id: id}, (error, res) ->
             assert.isNull error
             assert.isNull res
             account.identify {email: 'victim@player.com'}, (error, res) ->
@@ -298,7 +315,7 @@ describe 'delete', () ->
                 do done
 
     it 'returns nothing id there is no such account', (done) ->
-        account.delete {email: 'stranger@player.com'}, (error, res) ->
+        account.delete {account_id: 'stranger@player.com'}, (error, res) ->
             assert.isNull error
             assert.isNull res
             do done
@@ -307,7 +324,7 @@ describe 'delete', () ->
         stub = sinon.stub seneca_entity, 'remove$', (id, callback) ->
             error = new Error 'entity removal error'
             callback error
-        account.delete {email: 'victim@player.com'}, (error, res) ->
+        account.delete {account_id: id}, (error, res) ->
             do stub.restore
             assert.equal error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.'
             assert.isNull res
@@ -329,19 +346,21 @@ describe 'util.generate_password', () ->
 describe 'util.check_options', () ->
 
     it 'throws an error if a required option is not present', (done) ->
-        required = ['required']
+        required = ['module.required']
         options =
-            non_required: 'some_value'
+            module:
+                non_required: 'some_value'
         assert.throws () ->
             util.check_options options, required
-        , 'required option required not defined'
+        , 'required option module.required not defined'
         do done
 
     it 'does not throw errors if all required options are present', (done) ->
-        required = ['required_one', 'required_two']
+        required = ['required.one', 'required.two']
         options =
-            required_one: 1
-            required_two: 2
+            required:
+                one: 1
+                two: 2
         assert.doesNotThrow () ->
             util.check_options options, required
         do done

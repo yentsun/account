@@ -38,10 +38,16 @@
 
   options = {
     test: true,
-    token_secret: token_secret,
-    jwtNoTimestamp: true,
-    acl: acl,
-    starter_role: 'new'
+    token: {
+      secret: token_secret,
+      jwtNoTimestamp: true
+    },
+    authorization: {
+      acl: acl
+    },
+    registration: {
+      starter_status: 'new'
+    }
   };
 
   log_mode = process.env.TEST_LOG_MODE || 'quiet';
@@ -65,7 +71,7 @@
         assert.isNull(error);
         assert.isUndefined(new_account.password);
         assert.equal(new_account.registered_at, moment().format());
-        assert.equal(new_account.role, 'new');
+        assert.equal(new_account.status, 'new');
         return jwt.verify(new_account.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, new_account.id);
           assert.equal(decoded.reason, 'conf');
@@ -328,7 +334,6 @@
         action: 'get'
       }, function(error, res) {
         assert.isTrue(res.authorized);
-        assert.isTrue(res.token_verified);
         return done();
       });
     });
@@ -346,7 +351,6 @@
       return account.authorize({
         token: 'bad.token'
       }, function(error, res) {
-        assert.isFalse(res.token_verified);
         assert.isFalse(res.authorized);
         return done();
       });
@@ -360,7 +364,6 @@
         return account.authorize({
           token: tkn
         }, function(error, res) {
-          assert.isTrue(res.token_verified);
           assert.isFalse(res.authorized);
           return done();
         });
@@ -370,7 +373,6 @@
       return account.authorize({
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 'eyJydWJiaXNoIjo1MzM0NTN9.' + '8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4'
       }, function(error, res) {
-        assert.isTrue(res.token_verified);
         assert.isFalse(res.authorized);
         return done();
       });
@@ -386,7 +388,6 @@
         resource: 'profile',
         action: 'get'
       }, function(error, res) {
-        assert.isTrue(res.token_verified);
         assert.isFalse(res.authorized);
         sinon.restore();
         return done();
@@ -420,40 +421,63 @@
   });
 
   describe('confirm', function() {
-    ({
-      before: function(done) {
-        return account.register({
-          email: 'confirmed@player.com',
-          password: 'authpass'
+    var conf_token, rubb_token;
+    conf_token = null;
+    rubb_token = null;
+    before(function(done) {
+      return account.register({
+        email: 'confirmed@user.com',
+        password: 'authpass'
+      }, function(error, res) {
+        console.log(res);
+        conf_token = res.token;
+        account.issue_token({
+          account_id: res.id,
+          reason: 'rubb'
         }, function(error, res) {
-          return done();
+          return rubb_token = res.token;
         });
-      }
+        return done();
+      });
     });
-    return it('confirms a new user by the token', function(done) {
-      return done();
+    it('confirms a new user by the token', function(done) {
+      return account.confirm({
+        token: conf_token
+      }, function(error, conf_account) {
+        assert.equal(conf_account.email, 'confirmed@user.com');
+        assert.equal(conf_account.status, 'confirmed');
+        return done();
+      });
+    });
+    return it('fails to confirm if token has incorrect reason', function(done) {
+      return account.confirm({
+        token: rubb_token
+      }, function(error, res) {
+        assert.equal(res.message, 'token verification error');
+        return done();
+      });
     });
   });
 
   describe('delete', function() {
-    ({
-      before: function(done) {
-        return account.register({
-          email: 'victim@player.com',
-          password: 'authpass'
+    var id;
+    id = null;
+    before(function(done) {
+      return account.register({
+        email: 'victim@player.com',
+        password: 'authpass'
+      }, function(error, res) {
+        return account.identify({
+          email: 'victim@player.com'
         }, function(error, res) {
-          return account.identify({
-            email: 'victim@player.com'
-          }, function(error, res) {
-            assert.equal(res.id, 'victim@player.com');
-            return done();
-          });
+          id = res.id;
+          return done();
         });
-      }
+      });
     });
     it('deletes a registered account and makes sure it is not present any more', function(done) {
       return account["delete"]({
-        email: 'victim@player.com'
+        account_id: id
       }, function(error, res) {
         assert.isNull(error);
         assert.isNull(res);
@@ -467,7 +491,7 @@
     });
     it('returns nothing id there is no such account', function(done) {
       return account["delete"]({
-        email: 'stranger@player.com'
+        account_id: 'stranger@player.com'
       }, function(error, res) {
         assert.isNull(error);
         assert.isNull(res);
@@ -482,7 +506,7 @@
         return callback(error);
       });
       return account["delete"]({
-        email: 'victim@player.com'
+        account_id: id
       }, function(error, res) {
         stub.restore();
         assert.equal(error.message, 'seneca: Action cmd:delete,role:account failed: entity removal error.');
@@ -506,21 +530,25 @@
   describe('util.check_options', function() {
     it('throws an error if a required option is not present', function(done) {
       var required;
-      required = ['required'];
+      required = ['module.required'];
       options = {
-        non_required: 'some_value'
+        module: {
+          non_required: 'some_value'
+        }
       };
       assert.throws(function() {
         return util.check_options(options, required);
-      }, 'required option required not defined');
+      }, 'required option module.required not defined');
       return done();
     });
     return it('does not throw errors if all required options are present', function(done) {
       var required;
-      required = ['required_one', 'required_two'];
+      required = ['required.one', 'required.two'];
       options = {
-        required_one: 1,
-        required_two: 2
+        required: {
+          one: 1,
+          two: 2
+        }
       };
       assert.doesNotThrow(function() {
         return util.check_options(options, required);

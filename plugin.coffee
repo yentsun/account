@@ -1,6 +1,8 @@
 authenticate = require './cmd/authenticate'
 authorize = require './cmd/authorize'
 identify = require './cmd/identify'
+confirm = require './cmd/confirm'
+verify = require './cmd/verify'
 get = require './cmd/get'
 issue_token = require './cmd/issue_token'
 register = require './cmd/register'
@@ -12,14 +14,17 @@ module.exports = (options) ->
     role = 'account'
 
     seneca.add "init:#{role}", (msg, respond) ->
-        required = ['starter_role', 'token_secret', 'acl']
+        required = ['registration.starter_status', 'token.secret', 'authorization.acl']
         util.check_options options, required
         do respond
-    seneca.add "role:#{role},cmd:authenticate", authenticate seneca, options
-    seneca.add "role:#{role},cmd:authorize", authorize seneca, options
-    seneca.add "role:#{role},cmd:identify", identify seneca, options
-    seneca.add "role:#{role},cmd:get", get seneca, options
-    seneca.add "role:#{role},cmd:issue_token", issue_token seneca, options
-    seneca.add "role:#{role},cmd:register", register seneca, options
-    seneca.add "role:#{role},cmd:delete", delete_ seneca, options
+    seneca.add "role:#{role},cmd:authenticate", authenticate seneca
+    seneca.add "role:#{role},cmd:authorize", authorize seneca, options.authorization
+    seneca.add "role:#{role},cmd:identify", identify seneca
+    seneca.add "role:#{role},cmd:confirm", confirm seneca
+    seneca.add "role:#{role},cmd:verify", verify seneca, options.token
+    seneca.add "role:#{role},cmd:get", get seneca
+    seneca.add "role:#{role},cmd:issue_token", issue_token seneca, options.token
+    seneca.add "role:#{role},cmd:register", register seneca, options.registration
+    seneca.add "role:#{role},cmd:delete", delete_ seneca
+
     name: role

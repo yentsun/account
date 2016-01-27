@@ -5,9 +5,10 @@
 
 0.7.6
 -----
-- add `role` field to the account object
+- add `status` field to the account object
 - add `confirm` command
 - rename `login` to `issue_token`
+- add `verify` command to abstract token tasks
 
 
 0.7.5

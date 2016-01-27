@@ -11,9 +11,8 @@
   util = require('./../util');
 
   module.exports = function(seneca, options) {
-    var account, acl, cmd_register, password_generated, password_length, starter_role;
-    acl = options.acl;
-    starter_role = options.starter_role;
+    var account, cmd_register, password_generated, password_length, starter_status;
+    starter_status = options.starter_status;
     password_length = options.password_length || 8;
     password_generated = false;
     account = seneca.pin({
@@ -60,7 +59,7 @@
               new_account.email = email;
               new_account.hash = hash;
               new_account.registered_at = moment().format();
-              new_account.role = starter_role;
+              new_account.status = starter_status;
               return new_account.save$(function(error, saved_account) {
                 if (error) {
                   seneca.log.error('new account record failed:', error.message);

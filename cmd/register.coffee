@@ -4,8 +4,7 @@ moment = require 'moment'
 util = require './../util'
 
 module.exports = (seneca, options) ->
-    acl = options.acl
-    starter_role = options.starter_role
+    starter_status = options.starter_status
     password_length = options.password_length or 8
     password_generated = false
     account = seneca.pin
@@ -48,7 +47,7 @@ module.exports = (seneca, options) ->
                         new_account.email = email
                         new_account.hash = hash
                         new_account.registered_at = do moment().format
-                        new_account.role = starter_role
+                        new_account.status = starter_status
                         new_account.save$ (error, saved_account) ->
                             if error
                                 seneca.log.error 'new account record failed:', error.message

@@ -29,10 +29,10 @@ module.exports =
     ###
     check_options: (options, required) ->
         result = []
-        for option in required
-            if option not of options
-                console.log 'about to throw'
-                throw new Error "required option #{option} not defined"
+        for req_option in required
+            parts = req_option.split('.')
+            if parts[1] not of options[parts[0]]
+                throw new Error "required option #{req_option} not defined"
             else
-                result.push option
+                result.push req_option
         result

@@ -6,7 +6,7 @@ module.exports = (seneca, options) ->
         account_id = args.account_id
         reason = args.reason or 'auth'
         res = {}
-        secret = options.token_secret
+        secret = options.secret
         res.reason = reason
         res.token = jwt.sign {id: account_id, reason: reason},
             secret,
