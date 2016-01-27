@@ -168,7 +168,7 @@ describe 'identify', () ->
             do done
 
 
-describe 'login', () ->
+describe 'issue_token', () ->
 
     issued_token =
         'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.' +
@@ -176,13 +176,13 @@ describe 'login', () ->
         'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs'
 
     it 'logs in a user', (done) ->
-        account.login {email: 'logged@in.com'}, (error, res) ->
+        account.issue_token {email: 'logged@in.com'}, (error, res) ->
             assert.equal issued_token, res.token
             do done
 
     it 'returns same token if a user already logged in', (done) ->
-        account.login {email: 'logged@in.com'}, (error, res) ->
-            account.login {email: 'logged@in.com'}, (error, res) ->
+        account.issue_token {email: 'logged@in.com'}, (error, res) ->
+            account.issue_token {email: 'logged@in.com'}, (error, res) ->
                 assert.equal res.token, issued_token
                 do done
 
@@ -261,6 +261,15 @@ describe 'authorize', () ->
             assert.include error.message, 'acl error while adding roles'
             do sinon.restore
             do done
+
+describe 'confirm', () ->
+
+    before: (done) ->
+        account.register {email: 'confirmed@player.com', password: 'authpass'}, (error, res) ->
+            do done
+
+    it 'confirms a new user by the token', (done) ->
+        do done
 
 
 describe 'delete', () ->

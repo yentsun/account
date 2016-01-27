@@ -5,8 +5,8 @@
   jwt = require('jsonwebtoken');
 
   module.exports = function(seneca, options) {
-    var cmd_login;
-    cmd_login = function(params, respond) {
+    var cmd_issue_token;
+    cmd_issue_token = function(params, respond) {
       var account_id, res, secret;
       account_id = params.email;
       res = {};
@@ -18,9 +18,9 @@
       });
       return respond(null, res);
     };
-    return cmd_login;
+    return cmd_issue_token;
   };
 
 }).call(this);
 
-//# sourceMappingURL=login.js.map
+//# sourceMappingURL=issue_token.js.map

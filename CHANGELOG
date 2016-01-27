@@ -2,9 +2,13 @@
 -----
 - password reset
 
+
 0.7.6
 -----
-- `status` field to the account object
+- add `role` field to the account object
+- add `confirm` command
+- rename `login` to `issue_token`
+
 
 0.7.5
 -----

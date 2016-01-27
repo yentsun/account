@@ -254,11 +254,11 @@
     });
   });
 
-  describe('login', function() {
+  describe('issue_token', function() {
     var issued_token;
     issued_token = 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.' + 'eyJpZCI6ImxvZ2dlZEBpbi5jb20ifQ.' + 'BA59h_3VC84ocimYdg72auuEFd1vo8iZlJ8notcVrxs';
     it('logs in a user', function(done) {
-      return account.login({
+      return account.issue_token({
         email: 'logged@in.com'
       }, function(error, res) {
         assert.equal(issued_token, res.token);
@@ -266,10 +266,10 @@
       });
     });
     return it('returns same token if a user already logged in', function(done) {
-      return account.login({
+      return account.issue_token({
         email: 'logged@in.com'
       }, function(error, res) {
-        return account.login({
+        return account.issue_token({
           email: 'logged@in.com'
         }, function(error, res) {
           assert.equal(res.token, issued_token);
@@ -387,6 +387,22 @@
         sinon.restore();
         return done();
       });
+    });
+  });
+
+  describe('confirm', function() {
+    ({
+      before: function(done) {
+        return account.register({
+          email: 'confirmed@player.com',
+          password: 'authpass'
+        }, function(error, res) {
+          return done();
+        });
+      }
+    });
+    return it('confirms a new user by the token', function(done) {
+      return done();
     });
   });
 
