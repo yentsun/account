@@ -66,7 +66,11 @@
         assert.isUndefined(new_account.password);
         assert.equal(new_account.registered_at, moment().format());
         assert.equal(new_account.role, 'new');
-        return done();
+        return jwt.verify(new_account.token, token_secret, function(error, decoded) {
+          assert.equal(decoded.id, new_account.id);
+          assert.equal(decoded.reason, 'conf');
+          return done();
+        });
       });
     });
     it('fails if email is invalid', function(done) {

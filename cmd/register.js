@@ -31,10 +31,10 @@
       }
       return account.identify({
         email: email
-      }, function(error, account) {
+      }, function(error, acc) {
         var password;
-        if (account) {
-          seneca.log.warn('account already registered', account.email);
+        if (acc) {
+          seneca.log.warn('account already registered', acc.email);
           return respond(null, {
             message: 'account already registered'
           });
@@ -64,13 +64,24 @@
               return new_account.save$(function(error, saved_account) {
                 if (error) {
                   seneca.log.error('new account record failed:', error.message);
-                  respond(error, null);
+                  return respond(error, null);
                 }
                 if (saved_account) {
                   if (password_generated) {
                     saved_account.password = password;
                   }
-                  return respond(null, saved_account);
+                  seneca.log.debug('new account saved, issuing the conf token...');
+                  return account.issue_token({
+                    account_id: saved_account.id,
+                    reason: 'conf'
+                  }, function(error, res) {
+                    if (error) {
+                      seneca.log.error('confirmation token issue failed', error.message);
+                      return respond(error, null);
+                    }
+                    saved_account.token = res.token;
+                    return respond(null, saved_account);
+                  });
                 }
               });
             });

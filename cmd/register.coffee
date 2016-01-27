@@ -13,6 +13,7 @@ module.exports = (seneca, options) ->
         cmd: '*'
 
     cmd_register = (args, respond) ->
+
         email = args.email
 
         # check validity
@@ -22,9 +23,9 @@ module.exports = (seneca, options) ->
                 message: 'invalid email'
 
         # check for registered accounts
-        account.identify {email: email}, (error, account) ->
-            if account
-                seneca.log.warn 'account already registered', account.email
+        account.identify {email: email}, (error, acc) ->
+            if acc
+                seneca.log.warn 'account already registered', acc.email
                 respond null,
                     message: 'account already registered'
             else
@@ -51,8 +52,16 @@ module.exports = (seneca, options) ->
                         new_account.save$ (error, saved_account) ->
                             if error
                                 seneca.log.error 'new account record failed:', error.message
-                                respond error, null
+                                return respond error, null
                             if saved_account
+                                # send pack password if it has been generated
                                 saved_account.password = password if password_generated
-                                respond null, saved_account
+                                # issue a confirmation token
+                                seneca.log.debug 'new account saved, issuing the conf token...'
+                                account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
+                                    if error
+                                        seneca.log.error 'confirmation token issue failed', error.message
+                                        return respond error, null
+                                    saved_account.token = res.token
+                                    respond null, saved_account
     cmd_register

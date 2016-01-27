@@ -50,7 +50,10 @@ describe 'register', () ->
                 assert.isUndefined new_account.password
                 assert.equal new_account.registered_at, do moment().format
                 assert.equal new_account.role, 'new'
-                do done
+                jwt.verify new_account.token, token_secret, (error, decoded) ->
+                    assert.equal decoded.id, new_account.id
+                    assert.equal decoded.reason, 'conf'
+                    do done
 
     it 'fails if email is invalid', (done) ->
         account.register {email: 'bad_email.com', password: 'pass'},
