@@ -62,7 +62,7 @@
   });
 
   describe('register', function() {
-    it('registers new account and assert no password in response', function(done) {
+    it('registers new account with password and assert no password in response', function(done) {
       return account.register({
         email: 'good@email.com',
         password: 'pass'
@@ -77,6 +77,16 @@
           assert.equal(decoded.reason, 'conf');
           return done();
         });
+      });
+    });
+    it('registers a new account without password and with `confirmed` status', function(done) {
+      return account.register({
+        email: 'conf@email.com',
+        status: 'confirmed'
+      }, function(error, new_account) {
+        assert.equal(new_account.email, 'conf@email.com');
+        assert.equal(new_account.status, 'confirmed');
+        return done();
       });
     });
     it('fails if email is invalid', function(done) {

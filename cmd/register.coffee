@@ -14,6 +14,7 @@ module.exports = (seneca, options) ->
     cmd_register = (args, respond) ->
 
         email = args.email
+        status = args.status or starter_status
 
         # check validity
         if !validator.isEmail email
@@ -47,20 +48,25 @@ module.exports = (seneca, options) ->
                         new_account.email = email
                         new_account.hash = hash
                         new_account.registered_at = do moment().format
-                        new_account.status = starter_status
+                        new_account.status = status
                         new_account.save$ (error, saved_account) ->
                             if error
                                 seneca.log.error 'new account record failed:', error.message
                                 return respond error, null
                             if saved_account
+                                seneca.log.debug 'new account saved'
                                 # send pack password if it has been generated
                                 saved_account.password = password if password_generated
-                                # issue a confirmation token
-                                seneca.log.debug 'new account saved, issuing the conf token...'
-                                account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
-                                    if error
-                                        seneca.log.error 'confirmation token issue failed', error.message
-                                        return respond error, null
-                                    saved_account.token = res.token
-                                    respond null, saved_account
+                                if status == 'confirmed'
+                                    # do not issue confirmation token
+                                    return respond null, saved_account
+                                else
+                                    # issue a confirmation token
+                                    seneca.log.debug 'issuing the conf token...'
+                                    account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
+                                        if error
+                                            seneca.log.error 'confirmation token issue failed', error.message
+                                            return respond error, null
+                                        saved_account.token = res.token
+                                        respond null, saved_account
     cmd_register

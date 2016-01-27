@@ -46,7 +46,7 @@ account = seneca.pin
 
 describe 'register', () ->
 
-    it 'registers new account and assert no password in response', (done) ->
+    it 'registers new account with password and assert no password in response', (done) ->
         account.register {email: 'good@email.com', password: 'pass'},
             (error, new_account) ->
                 assert.equal new_account.email, 'good@email.com'
@@ -58,6 +58,13 @@ describe 'register', () ->
                     assert.equal decoded.id, new_account.id
                     assert.equal decoded.reason, 'conf'
                     do done
+
+    it 'registers a new account without password and with `confirmed` status', (done) ->
+        account.register {email: 'conf@email.com', status: 'confirmed'},
+            (error, new_account) ->
+                assert.equal new_account.email, 'conf@email.com'
+                assert.equal new_account.status, 'confirmed'
+                do done
 
     it 'fails if email is invalid', (done) ->
         account.register {email: 'bad_email.com', password: 'pass'},

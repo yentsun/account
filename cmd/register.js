@@ -20,8 +20,9 @@
       cmd: '*'
     });
     cmd_register = function(args, respond) {
-      var email;
+      var email, status;
       email = args.email;
+      status = args.status || starter_status;
       if (!validator.isEmail(email)) {
         seneca.log.warn('invalid email', email);
         return respond(null, {
@@ -59,28 +60,33 @@
               new_account.email = email;
               new_account.hash = hash;
               new_account.registered_at = moment().format();
-              new_account.status = starter_status;
+              new_account.status = status;
               return new_account.save$(function(error, saved_account) {
                 if (error) {
                   seneca.log.error('new account record failed:', error.message);
                   return respond(error, null);
                 }
                 if (saved_account) {
+                  seneca.log.debug('new account saved');
                   if (password_generated) {
                     saved_account.password = password;
                   }
-                  seneca.log.debug('new account saved, issuing the conf token...');
-                  return account.issue_token({
-                    account_id: saved_account.id,
-                    reason: 'conf'
-                  }, function(error, res) {
-                    if (error) {
-                      seneca.log.error('confirmation token issue failed', error.message);
-                      return respond(error, null);
-                    }
-                    saved_account.token = res.token;
+                  if (status === 'confirmed') {
                     return respond(null, saved_account);
-                  });
+                  } else {
+                    seneca.log.debug('issuing the conf token...');
+                    return account.issue_token({
+                      account_id: saved_account.id,
+                      reason: 'conf'
+                    }, function(error, res) {
+                      if (error) {
+                        seneca.log.error('confirmation token issue failed', error.message);
+                        return respond(error, null);
+                      }
+                      saved_account.token = res.token;
+                      return respond(null, saved_account);
+                    });
+                  }
                 }
               });
             });
