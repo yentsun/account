@@ -5,6 +5,7 @@ update = require './cmd/update'
 verify = require './cmd/verify'
 get = require './cmd/get'
 issue_token = require './cmd/issue_token'
+encrypt = require './cmd/encrypt'
 register = require './cmd/register'
 delete_ = require './cmd/delete'
 util = require './util'
@@ -24,6 +25,7 @@ module.exports = (options) ->
     seneca.add "role:#{role},cmd:verify", verify seneca, options.token
     seneca.add "role:#{role},cmd:get", get seneca
     seneca.add "role:#{role},cmd:issue_token", issue_token seneca, options.token
+    seneca.add "role:#{role},cmd:encrypt", encrypt seneca
     seneca.add "role:#{role},cmd:register", register seneca, options.registration
     seneca.add "role:#{role},cmd:delete", delete_ seneca
 

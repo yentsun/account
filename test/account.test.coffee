@@ -87,24 +87,6 @@ describe 'register', () ->
             assert.equal new_user.password.length, 8
             do done
 
-    it 'fails if there is a salt generation error', (done) ->
-        stub = sinon.stub bcrypt, 'genSalt', (length, callback) ->
-            callback new Error 'bcrypt salt generation error'
-        account.register {email: 'good1@email.com', password: 'pass'}, (error, new_user) ->
-            do stub.restore
-            assert.isNull new_user
-            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: bcrypt salt generation error.'
-            do done
-
-    it 'fails if there is a hash generation error', (done) ->
-        stub = sinon.stub bcrypt, 'hash', (password, salt, callback) ->
-            callback new Error 'bcrypt hash generation error'
-        account.register {email: 'good2@email.com', password: 'pass'}, (error, new_user) ->
-            do stub.restore
-            assert.isNull new_user
-            assert.equal error.message, 'seneca: Action cmd:register,role:account failed: bcrypt hash generation error.'
-            do done
-
     it 'fails if there is a storage error', (done) ->
         stub = sinon.stub seneca_entity, 'save$', (callback) ->
             callback new Error 'seneca save$ error'
@@ -112,6 +94,26 @@ describe 'register', () ->
             do stub.restore
             assert.isNull new_user
             assert.equal error.message, 'seneca: Action cmd:register,role:account failed: seneca save$ error.'
+            do done
+
+describe 'encrypt', () ->
+
+    it 'fails if there is a salt generation error', (done) ->
+        stub = sinon.stub bcrypt, 'genSalt', (length, callback) ->
+            callback new Error 'bcrypt salt generation error'
+        account.encrypt {subject: 'pass'}, (error, res) ->
+            do stub.restore
+            assert.isNull res
+            assert.equal error.message, 'seneca: Action cmd:encrypt,role:account failed: bcrypt salt generation error.'
+            do done
+
+    it 'fails if there is a hash generation error', (done) ->
+        stub = sinon.stub bcrypt, 'hash', (password, salt, callback) ->
+            callback new Error 'bcrypt hash generation error'
+        account.encrypt {subject: 'pass'}, (error, res) ->
+            do stub.restore
+            assert.isNull res
+            assert.equal error.message, 'seneca: Action cmd:encrypt,role:account failed: bcrypt hash generation error.'
             do done
 
 
@@ -291,6 +293,13 @@ describe 'update', () ->
         account.update {account_id: id, status: 'confirmed'}, (error, upd_acc) ->
             assert.equal upd_acc.status, 'confirmed'
             do done
+
+    it 'updates a user password', (done) ->
+        account.update {account_id: id, password: 'newpass'}, (error, upd_acc) ->
+            assert.equal upd_acc.email, 'to_update@user.com'
+            account.authenticate {email: 'to_update@user.com', password: 'newpass'}, (error, res) ->
+                assert.isTrue res.authenticated
+                do done
 
 
 describe 'delete', () ->

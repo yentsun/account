@@ -123,36 +123,6 @@
         return done();
       });
     });
-    it('fails if there is a salt generation error', function(done) {
-      var stub;
-      stub = sinon.stub(bcrypt, 'genSalt', function(length, callback) {
-        return callback(new Error('bcrypt salt generation error'));
-      });
-      return account.register({
-        email: 'good1@email.com',
-        password: 'pass'
-      }, function(error, new_user) {
-        stub.restore();
-        assert.isNull(new_user);
-        assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: bcrypt salt generation error.');
-        return done();
-      });
-    });
-    it('fails if there is a hash generation error', function(done) {
-      var stub;
-      stub = sinon.stub(bcrypt, 'hash', function(password, salt, callback) {
-        return callback(new Error('bcrypt hash generation error'));
-      });
-      return account.register({
-        email: 'good2@email.com',
-        password: 'pass'
-      }, function(error, new_user) {
-        stub.restore();
-        assert.isNull(new_user);
-        assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: bcrypt hash generation error.');
-        return done();
-      });
-    });
     return it('fails if there is a storage error', function(done) {
       var stub;
       stub = sinon.stub(seneca_entity, 'save$', function(callback) {
@@ -165,6 +135,37 @@
         stub.restore();
         assert.isNull(new_user);
         assert.equal(error.message, 'seneca: Action cmd:register,role:account failed: seneca save$ error.');
+        return done();
+      });
+    });
+  });
+
+  describe('encrypt', function() {
+    it('fails if there is a salt generation error', function(done) {
+      var stub;
+      stub = sinon.stub(bcrypt, 'genSalt', function(length, callback) {
+        return callback(new Error('bcrypt salt generation error'));
+      });
+      return account.encrypt({
+        subject: 'pass'
+      }, function(error, res) {
+        stub.restore();
+        assert.isNull(res);
+        assert.equal(error.message, 'seneca: Action cmd:encrypt,role:account failed: bcrypt salt generation error.');
+        return done();
+      });
+    });
+    return it('fails if there is a hash generation error', function(done) {
+      var stub;
+      stub = sinon.stub(bcrypt, 'hash', function(password, salt, callback) {
+        return callback(new Error('bcrypt hash generation error'));
+      });
+      return account.encrypt({
+        subject: 'pass'
+      }, function(error, res) {
+        stub.restore();
+        assert.isNull(res);
+        assert.equal(error.message, 'seneca: Action cmd:encrypt,role:account failed: bcrypt hash generation error.');
         return done();
       });
     });
@@ -445,13 +446,28 @@
         return done();
       });
     });
-    return it('updates a user status to `confirmed`', function(done) {
+    it('updates a user status to `confirmed`', function(done) {
       return account.update({
         account_id: id,
         status: 'confirmed'
       }, function(error, upd_acc) {
         assert.equal(upd_acc.status, 'confirmed');
         return done();
+      });
+    });
+    return it('updates a user password', function(done) {
+      return account.update({
+        account_id: id,
+        password: 'newpass'
+      }, function(error, upd_acc) {
+        assert.equal(upd_acc.email, 'to_update@user.com');
+        return account.authenticate({
+          email: 'to_update@user.com',
+          password: 'newpass'
+        }, function(error, res) {
+          assert.isTrue(res.authenticated);
+          return done();
+        });
       });
     });
   });
