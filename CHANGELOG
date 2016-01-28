@@ -1,3 +1,8 @@
+0.7.9
+-----
+- 'loose' payload @ `issue token`
+
+
 0.7.8
 -----
 - `confirm` command transformed to `update` command

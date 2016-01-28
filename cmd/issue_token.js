@@ -7,16 +7,13 @@
   module.exports = function(seneca, options) {
     var cmd_issue_token;
     cmd_issue_token = function(args, respond) {
-      var account_id, reason, res, secret;
-      account_id = args.account_id;
-      reason = args.reason || 'auth';
+      var res, secret;
+      args.id = args.account_id;
+      delete args.account_id;
+      args.reason = args.reason || 'auth';
       res = {};
       secret = options.secret;
-      res.reason = reason;
-      res.token = jwt.sign({
-        id: account_id,
-        reason: reason
-      }, secret, {
+      res.token = jwt.sign(args, secret, {
         noTimestamp: options.jwtNoTimestamp
       });
       return respond(null, res);

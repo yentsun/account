@@ -194,12 +194,12 @@ describe 'issue_token', () ->
             id = res.id
             do done
 
-    it 'logs in a user', (done) ->
-        account.issue_token {account_id: id}, (error, res) ->
+    it 'allows any paload to be encoded', (done) ->
+        account.issue_token {account_id: id, any: 'value'}, (error, res) ->
             jwt.verify res.token, token_secret, (error, decoded) ->
                 assert.equal decoded.id, id
                 assert.equal decoded.reason, 'auth'
-                assert.equal res.reason, 'auth'
+                assert.equal decoded.any, 'value'
                 do done
 
     it 'returns a confirmation token', (done) ->

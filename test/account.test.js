@@ -289,14 +289,15 @@
         return done();
       });
     });
-    it('logs in a user', function(done) {
+    it('allows any paload to be encoded', function(done) {
       return account.issue_token({
-        account_id: id
+        account_id: id,
+        any: 'value'
       }, function(error, res) {
         return jwt.verify(res.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, id);
           assert.equal(decoded.reason, 'auth');
-          assert.equal(res.reason, 'auth');
+          assert.equal(decoded.any, 'value');
           return done();
         });
       });
