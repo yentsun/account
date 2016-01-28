@@ -1,6 +1,6 @@
-0.8.0
+0.7.8
 -----
-- password reset
+- `confirm` command transformed to `update` command
 
 
 0.7.7

@@ -278,28 +278,18 @@ describe 'authorize', () ->
             do done
 
 
-describe 'confirm', () ->
+describe 'update', () ->
 
-    conf_token = null
-    rubb_token = null
+    id = null
 
     before (done) ->
-        account.register {email: 'confirmed@user.com', password: 'authpass'}, (error, res) ->
-            console.log res
-            conf_token = res.token
-            account.issue_token {account_id: res.id, reason: 'rubb'}, (error, res) ->
-                rubb_token = res.token
+        account.register {email: 'to_update@user.com', password: 'authpass'}, (error, res) ->
+            id = res.id
             do done
 
-    it 'confirms a new user by the token', (done) ->
-        account.confirm {token: conf_token}, (error, conf_account) ->
-            assert.equal conf_account.email, 'confirmed@user.com'
-            assert.equal conf_account.status, 'confirmed'
-            do done
-
-    it 'fails to confirm if token has incorrect reason', (done) ->
-        account.confirm {token: rubb_token}, (error, res) ->
-            assert.equal res.message, 'token verification error'
+    it 'updates a user status to `confirmed`', (done) ->
+        account.update {account_id: id, status: 'confirmed'}, (error, upd_acc) ->
+            assert.equal upd_acc.status, 'confirmed'
             do done
 
 

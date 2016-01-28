@@ -1,7 +1,7 @@
 authenticate = require './cmd/authenticate'
 authorize = require './cmd/authorize'
 identify = require './cmd/identify'
-confirm = require './cmd/confirm'
+update = require './cmd/update'
 verify = require './cmd/verify'
 get = require './cmd/get'
 issue_token = require './cmd/issue_token'
@@ -20,7 +20,7 @@ module.exports = (options) ->
     seneca.add "role:#{role},cmd:authenticate", authenticate seneca
     seneca.add "role:#{role},cmd:authorize", authorize seneca, options.authorization
     seneca.add "role:#{role},cmd:identify", identify seneca
-    seneca.add "role:#{role},cmd:confirm", confirm seneca
+    seneca.add "role:#{role},cmd:update", update seneca
     seneca.add "role:#{role},cmd:verify", verify seneca, options.token
     seneca.add "role:#{role},cmd:get", get seneca
     seneca.add "role:#{role},cmd:issue_token", issue_token seneca, options.token

@@ -430,40 +430,24 @@
     });
   });
 
-  describe('confirm', function() {
-    var conf_token, rubb_token;
-    conf_token = null;
-    rubb_token = null;
+  describe('update', function() {
+    var id;
+    id = null;
     before(function(done) {
       return account.register({
-        email: 'confirmed@user.com',
+        email: 'to_update@user.com',
         password: 'authpass'
       }, function(error, res) {
-        console.log(res);
-        conf_token = res.token;
-        account.issue_token({
-          account_id: res.id,
-          reason: 'rubb'
-        }, function(error, res) {
-          return rubb_token = res.token;
-        });
+        id = res.id;
         return done();
       });
     });
-    it('confirms a new user by the token', function(done) {
-      return account.confirm({
-        token: conf_token
-      }, function(error, conf_account) {
-        assert.equal(conf_account.email, 'confirmed@user.com');
-        assert.equal(conf_account.status, 'confirmed');
-        return done();
-      });
-    });
-    return it('fails to confirm if token has incorrect reason', function(done) {
-      return account.confirm({
-        token: rubb_token
-      }, function(error, res) {
-        assert.equal(res.message, 'token verification error');
+    return it('updates a user status to `confirmed`', function(done) {
+      return account.update({
+        account_id: id,
+        status: 'confirmed'
+      }, function(error, upd_acc) {
+        assert.equal(upd_acc.status, 'confirmed');
         return done();
       });
     });
