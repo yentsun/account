@@ -1,14 +1,20 @@
 jwt = require 'jsonwebtoken'
+_ = require 'lodash'
 
 module.exports = (seneca, options) ->
 
     cmd_issue_token = (args, respond) ->
-        args.id = args.account_id
-        delete args.account_id
-        args.reason = args.reason or 'auth'
+        account_id = args.account_id
+        custom_payload = args.payload
+        reason = args.reason or 'auth'
+        payload =
+            id: account_id
+            reason: reason
         res = {}
         secret = options.secret
-        res.token = jwt.sign args,
+        _.merge payload, custom_payload
+        seneca.log.debug 'signing payload:', payload
+        res.token = jwt.sign payload,
             secret,
             noTimestamp: options.jwtNoTimestamp
         respond null, res

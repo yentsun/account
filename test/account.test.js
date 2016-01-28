@@ -289,10 +289,12 @@
         return done();
       });
     });
-    it('allows any paload to be encoded', function(done) {
+    it('allows any payload to be encoded', function(done) {
       return account.issue_token({
         account_id: id,
-        any: 'value'
+        payload: {
+          any: 'value'
+        }
       }, function(error, res) {
         return jwt.verify(res.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, id);
