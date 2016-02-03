@@ -17,6 +17,7 @@ module.exports = (seneca, options) ->
                 seneca.log.error 'error while loading account', account_id, error.message
                 return respond error
             else
+                seneca.log.debug 'updating account', acc
                 async.waterfall [
                     (callback) ->
                         if new_status

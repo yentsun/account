@@ -7,16 +7,16 @@
   module.exports = function(seneca, options) {
     var cmd_authenticate;
     cmd_authenticate = function(params, respond) {
-      var account_id, password, response;
-      account_id = params.email;
+      var email, password, response;
+      email = params.email.toLowerCase();
       password = params.password;
       response = {
-        email: account_id,
+        email: email,
         authenticated: false
       };
-      if (account_id && password) {
+      if (email && password) {
         return seneca.act('role:account,cmd:identify', {
-          email: account_id
+          email: email
         }, function(error, account) {
           if (account) {
             seneca.log.debug('account identified', account.id);
@@ -31,13 +31,13 @@
               }
             });
           } else {
-            seneca.log.debug('authentication failed, unidentified account', account_id);
+            seneca.log.debug('authentication failed, unidentified account', email);
             response.identified = false;
             return respond(null, response);
           }
         });
       } else {
-        seneca.log.error('missing account_id or password', account_id, password);
+        seneca.log.error('missing account_id or password', email, password);
         return respond(null, response);
       }
     };

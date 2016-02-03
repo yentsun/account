@@ -21,6 +21,7 @@
           seneca.log.error('error while loading account', account_id, error.message);
           return respond(error);
         } else {
+          seneca.log.debug('updating account', acc);
           return async.waterfall([
             function(callback) {
               if (new_status) {

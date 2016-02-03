@@ -12,7 +12,7 @@ module.exports = (seneca, options) ->
 
     cmd_register = (args, respond) ->
 
-        email = args.email
+        email = args.email.toLowerCase()
         status = args.status or starter_status
 
         # check validity

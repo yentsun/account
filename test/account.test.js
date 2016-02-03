@@ -64,7 +64,7 @@
   describe('register', function() {
     it('registers new account with password and assert no password in response', function(done) {
       return account.register({
-        email: 'good@email.com',
+        email: 'gOOd@email.com',
         password: 'pass'
       }, function(error, new_account) {
         assert.equal(new_account.email, 'good@email.com');
@@ -185,6 +185,15 @@
     it('returns true if password is correct', function(done) {
       return account.authenticate({
         email: email,
+        password: 'somepassword'
+      }, function(error, result) {
+        assert.isTrue(result.authenticated);
+        return done();
+      });
+    });
+    it('returns true if email is set uppercase', function(done) {
+      return account.authenticate({
+        email: 'NEWEST@kid.com',
         password: 'somepassword'
       }, function(error, result) {
         assert.isTrue(result.authenticated);

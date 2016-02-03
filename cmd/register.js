@@ -19,7 +19,7 @@
     });
     cmd_register = function(args, respond) {
       var email, status;
-      email = args.email;
+      email = args.email.toLowerCase();
       status = args.status || starter_status;
       if (!validator.isEmail(email)) {
         seneca.log.warn('invalid email', email);

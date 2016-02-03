@@ -3,15 +3,15 @@ bcrypt = require 'bcryptjs'
 module.exports = (seneca, options) ->
 
     cmd_authenticate = (params, respond) ->
-        account_id = params.email
+        email = params.email.toLowerCase()
         password = params.password
         response =
-            email: account_id
+            email: email
             authenticated: false
 
-        if account_id and password
+        if email and password
             # get the account
-            seneca.act 'role:account,cmd:identify', {email: account_id}, (error, account) ->
+            seneca.act 'role:account,cmd:identify', {email: email}, (error, account) ->
                 if account
                     seneca.log.debug 'account identified', account.id
                     bcrypt.compare password, account.hash, (error, passed) ->
@@ -23,11 +23,11 @@ module.exports = (seneca, options) ->
                             response.authenticated = passed
                             respond null, response
                 else
-                    seneca.log.debug 'authentication failed, unidentified account', account_id
+                    seneca.log.debug 'authentication failed, unidentified account', email
                     response.identified = false # TODO is this really needed?
                     respond null, response
         else
-            seneca.log.error 'missing account_id or password', account_id, password
+            seneca.log.error 'missing account_id or password', email, password
             respond null, response
 
     cmd_authenticate

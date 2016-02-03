@@ -47,7 +47,7 @@ account = seneca.pin
 describe 'register', () ->
 
     it 'registers new account with password and assert no password in response', (done) ->
-        account.register {email: 'good@email.com', password: 'pass'},
+        account.register {email: 'gOOd@email.com', password: 'pass'},
             (error, new_account) ->
                 assert.equal new_account.email, 'good@email.com'
                 assert.isNull error
@@ -127,6 +127,11 @@ describe 'authenticate', () ->
 
     it 'returns true if password is correct', (done) ->
         account.authenticate {email: email, password: 'somepassword'}, (error, result) ->
+            assert.isTrue result.authenticated
+            do done
+
+    it 'returns true if email is set uppercase', (done) ->
+        account.authenticate {email: 'NEWEST@kid.com', password: 'somepassword'}, (error, result) ->
             assert.isTrue result.authenticated
             do done
 
