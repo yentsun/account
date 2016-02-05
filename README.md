@@ -1,7 +1,7 @@
 Seneca account plugin
 =====================
 
-A Seneca plugin handling authentication, authorization, registering, user records etc (with JWT tokens)
+A Seneca plugin handling authentication, authorization, registering, password encrypting, etc (with JWT tokens)
 
 For now it should be used mostly as an example, though it backs up at least in one project.
 
