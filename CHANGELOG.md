@@ -1,9 +1,9 @@
 0.8.0
 -----
-- [] camelCase parameters (opposite to under_score)
-- [] basic documentation
+- [ ] camelCase parameters (opposite to under_score)
+- [ ] basic documentation
 - [x] coverage 100%
-- [] system errors, no silencing
+- [ ] system errors, no silencing
 
 0.7.9
 -----
