@@ -7,59 +7,56 @@
   module.exports = function(seneca, options) {
     var cmd_update;
     cmd_update = function(args, respond) {
-      var account, account_id, account_records, new_password, new_status;
+      var account, accountId, account_records, new_password, new_status;
       account = seneca.pin({
         role: 'account',
         cmd: '*'
       });
       new_status = args.status;
       new_password = args.password;
-      account_id = args.account_id;
+      accountId = args.account_id;
       account_records = seneca.make('account');
-      return account_records.load$(account_id, function(error, acc) {
+      return account_records.load$(accountId, function(error, acc) {
+        var message;
         if (error) {
-          seneca.log.error('error while loading account', account_id, error.message);
+          seneca.log.error('error while loading account', accountId, error.message);
           return respond(error);
-        } else {
-          seneca.log.debug('updating account', acc);
-          return async.waterfall([
-            function(callback) {
-              if (new_status) {
-                seneca.log.debug('updating status...');
-                acc.status = new_status;
-              }
-              return callback(null, acc);
-            }, function(acc, callback) {
-              if (new_password) {
-                seneca.log.debug('updating password...');
-                return account.encrypt({
-                  subject: new_password
-                }, function(error, res) {
-                  if (res.hash) {
-                    acc.hash = res.hash;
-                  }
-                  return callback(error, acc);
-                });
-              } else {
-                return callback(null, acc);
-              }
+        }
+        if (!acc) {
+          message = 'tried to update nonexistent account ' + accountId;
+          seneca.log.error(message);
+          return respond(new Error(message));
+        }
+        seneca.log.debug('updating account', acc.id);
+        return async.waterfall([
+          function(callback) {
+            if (new_status) {
+              seneca.log.debug('updating status...');
+              acc.status = new_status;
             }
-          ], function(error, acc) {
+            return callback(null, acc);
+          }, function(acc, callback) {
+            if (new_password) {
+              seneca.log.debug('updating password...');
+              return account.encrypt({
+                subject: new_password
+              }, function(error, res) {
+                acc.hash = res.hash;
+                return callback(error, acc);
+              });
+            } else {
+              return callback(null, acc);
+            }
+          }
+        ], function(error, acc) {
+          return acc.save$(function(error, saved_acc) {
             if (error) {
-              seneca.log.error('account update failed:', error.message);
+              seneca.log.error('account record update failed:', error.message);
               return respond(error, null);
             }
-            return acc.save$(function(error, saved_acc) {
-              if (error) {
-                seneca.log.error('account record update failed:', error.message);
-                return respond(error, null);
-              }
-              if (saved_acc) {
-                return respond(null, saved_acc);
-              }
-            });
+            return respond(null, saved_acc);
           });
-        }
+        });
       });
     };
     return cmd_update;

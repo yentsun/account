@@ -8,8 +8,8 @@
       account_records = seneca.make('account');
       return account_records.load$(id, function(error, account) {
         if (error) {
-          seneca.log.error('error while loading account', email, error.message);
-          return respond(null, null);
+          seneca.log.error('error while loading account:', error.message);
+          return respond(error, null);
         } else {
           return respond(null, account);
         }

@@ -35,9 +35,7 @@ module.exports = (seneca, options) ->
                     password_generated = true
                 # hash password
                 account.encrypt {subject: password}, (error, res) ->
-                    if error
-                        seneca.log.error 'password encrypt failed:', error.message
-                        return respond error, null
+                    # if error, seneca will fail with fatal here
                     hash = res.hash
                     # create new user record
                     new_account = seneca.make 'account'
@@ -49,20 +47,17 @@ module.exports = (seneca, options) ->
                         if error
                             seneca.log.error 'new account record failed:', error.message
                             return respond error, null
-                        if saved_account
-                            seneca.log.debug 'new account saved'
-                            # send pack password if it has been generated
-                            saved_account.password = password if password_generated
-                            if status == 'confirmed'
-                                # do not issue confirmation token
-                                return respond null, saved_account
-                            else
-                                # issue a confirmation token
-                                seneca.log.debug 'issuing the conf token...'
-                                account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
-                                    if error
-                                        seneca.log.error 'confirmation token issue failed', error.message
-                                        return respond error, null
-                                    saved_account.token = res.token
-                                    respond null, saved_account
+                        seneca.log.debug 'new account saved'
+                        # send pack password if it has been generated
+                        saved_account.password = password if password_generated
+                        if status == 'confirmed'
+                            # do not issue and attach confirmation token
+                            return respond null, saved_account
+                        else
+                            # issue a confirmation token
+                            seneca.log.debug 'issuing the conf token...'
+                            account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
+                            # if error, seneca will fail with fatal here
+                                saved_account.token = res.token
+                                respond error, saved_account
     cmd_register

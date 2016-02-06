@@ -47,10 +47,6 @@
             subject: password
           }, function(error, res) {
             var hash, new_account;
-            if (error) {
-              seneca.log.error('password encrypt failed:', error.message);
-              return respond(error, null);
-            }
             hash = res.hash;
             new_account = seneca.make('account');
             new_account.email = email;
@@ -62,27 +58,21 @@
                 seneca.log.error('new account record failed:', error.message);
                 return respond(error, null);
               }
-              if (saved_account) {
-                seneca.log.debug('new account saved');
-                if (password_generated) {
-                  saved_account.password = password;
-                }
-                if (status === 'confirmed') {
-                  return respond(null, saved_account);
-                } else {
-                  seneca.log.debug('issuing the conf token...');
-                  return account.issue_token({
-                    account_id: saved_account.id,
-                    reason: 'conf'
-                  }, function(error, res) {
-                    if (error) {
-                      seneca.log.error('confirmation token issue failed', error.message);
-                      return respond(error, null);
-                    }
-                    saved_account.token = res.token;
-                    return respond(null, saved_account);
-                  });
-                }
+              seneca.log.debug('new account saved');
+              if (password_generated) {
+                saved_account.password = password;
+              }
+              if (status === 'confirmed') {
+                return respond(null, saved_account);
+              } else {
+                seneca.log.debug('issuing the conf token...');
+                return account.issue_token({
+                  account_id: saved_account.id,
+                  reason: 'conf'
+                }, function(error, res) {
+                  saved_account.token = res.token;
+                  return respond(error, saved_account);
+                });
               }
             });
           });

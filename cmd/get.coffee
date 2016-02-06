@@ -5,8 +5,8 @@ module.exports = (seneca, options) ->
         account_records = seneca.make 'account'
         account_records.load$ id, (error, account) ->
             if error
-                seneca.log.error 'error while loading account', email, error.message
-                respond null, null
+                seneca.log.error 'error while loading account:', error.message
+                respond error, null
             else
                 respond null, account
 

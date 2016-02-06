@@ -53,7 +53,12 @@
   log_mode = process.env.TEST_LOG_MODE || 'quiet';
 
   seneca = require('seneca')({
-    log: log_mode
+    log: log_mode,
+    debug: {
+      undead: true,
+      short_logs: true,
+      fragile: true
+    }
   }).use('../plugin', options).client();
 
   account = seneca.pin({
@@ -443,6 +448,31 @@
     });
   });
 
+  describe('get', function() {
+    return it('returns error if it failed to get record from storage', function(done) {
+      var id;
+      id = null;
+      return account.register({
+        email: 'failed@user.com',
+        password: 'authpass'
+      }, function(error, res) {
+        var stub;
+        id = res.id;
+        stub = sinon.stub(seneca_entity, 'load$', function(id, callback) {
+          error = new Error('seneca load$ error');
+          return callback(error);
+        });
+        return account.get({
+          account_id: id
+        }, function(error) {
+          assert.include(error.message, 'seneca load$ error');
+          stub.restore();
+          return done();
+        });
+      });
+    });
+  });
+
   describe('update', function() {
     var id;
     id = null;
@@ -464,7 +494,7 @@
         return done();
       });
     });
-    return it('updates a user password', function(done) {
+    it('updates a user password', function(done) {
       return account.update({
         account_id: id,
         password: 'newpass'
@@ -477,6 +507,47 @@
           assert.isTrue(res.authenticated);
           return done();
         });
+      });
+    });
+    it('fails to update if there is a load error', function(done) {
+      var stub;
+      stub = sinon.stub(seneca_entity, 'load$', function(id, callback) {
+        var error;
+        error = new Error('seneca load$ error');
+        return callback(error);
+      });
+      return account.update({
+        account_id: id,
+        password: 'newestpass'
+      }, function(error, upd_acc) {
+        assert.include(error.message, 'seneca load$ error');
+        stub.restore();
+        return done();
+      });
+    });
+    it('fails to update if there is a save$ error', function(done) {
+      var stub;
+      stub = sinon.stub(seneca_entity, 'save$', function(callback) {
+        var error;
+        error = new Error('seneca save$ error');
+        return callback(error);
+      });
+      return account.update({
+        account_id: id,
+        password: 'newestpass'
+      }, function(error, upd_acc) {
+        assert.include(error.message, 'seneca save$ error');
+        stub.restore();
+        return done();
+      });
+    });
+    return it('fails to update if there is no such accountId', function(done) {
+      return account.update({
+        account_id: 'WERD01',
+        password: 'newestpass'
+      }, function(error, upd_acc) {
+        assert.include(error.message, 'tried to update nonexistent account WERD01');
+        return done();
       });
     });
   });

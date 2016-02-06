@@ -36,6 +36,10 @@ log_mode = process.env.TEST_LOG_MODE or 'quiet'
 
 seneca = require('seneca')(
     log: log_mode
+    debug:
+        undead: true
+        short_logs: true
+        fragile: true
     )
     .use '../plugin', options
     .client()
@@ -284,6 +288,20 @@ describe 'authorize', () ->
             do sinon.restore
             do done
 
+describe 'get', () ->
+
+    it 'returns error if it failed to get record from storage', (done) ->
+        id = null
+        account.register {email: 'failed@user.com', password: 'authpass'}, (error, res) ->
+            id = res.id
+            stub = sinon.stub seneca_entity, 'load$', (id, callback) ->
+                error = new Error 'seneca load$ error'
+                callback error
+            account.get {account_id: id}, (error) ->
+                assert.include error.message, 'seneca load$ error'
+                do stub.restore
+                do done
+
 
 describe 'update', () ->
 
@@ -305,6 +323,29 @@ describe 'update', () ->
             account.authenticate {email: 'to_update@user.com', password: 'newpass'}, (error, res) ->
                 assert.isTrue res.authenticated
                 do done
+
+    it 'fails to update if there is a load error', (done) ->
+        stub = sinon.stub seneca_entity, 'load$', (id, callback) ->
+            error = new Error 'seneca load$ error'
+            callback error
+        account.update {account_id: id, password: 'newestpass'}, (error, upd_acc) ->
+            assert.include error.message, 'seneca load$ error'
+            do stub.restore
+            do done
+
+    it 'fails to update if there is a save$ error', (done) ->
+        stub = sinon.stub seneca_entity, 'save$', (callback) ->
+            error = new Error 'seneca save$ error'
+            callback error
+        account.update {account_id: id, password: 'newestpass'}, (error, upd_acc) ->
+            assert.include error.message, 'seneca save$ error'
+            do stub.restore
+            do done
+
+    it 'fails to update if there is no such accountId', (done) ->
+        account.update {account_id: 'WERD01', password: 'newestpass'}, (error, upd_acc) ->
+            assert.include error.message, 'tried to update nonexistent account WERD01'
+            do done
 
 
 describe 'delete', () ->
