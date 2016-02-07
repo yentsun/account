@@ -9,7 +9,7 @@ module.exports = (seneca, options) ->
         resource = args.resource
         action = args.action
         token = args.token
-        accountId = args.accountId
+        accountId = args.accountId or 'anonymous'
 
         account = seneca.pin
             role: 'account'
@@ -18,6 +18,7 @@ module.exports = (seneca, options) ->
             authorized: false
 
         async.waterfall [
+
             (callback) ->
                 if token
                     # verify and read token payload
@@ -29,29 +30,36 @@ module.exports = (seneca, options) ->
                         return callback null, res.decoded.id
                 else
                     return callback null, null
-        ], (error, decodedAccouintId) ->
-            if decodedAccouintId
-                accountId = decodedAccouintId
-            if !accountId
-                seneca.log.debug 'accountId not provided'
-                return respond null, response
-            account.get {account_id: accountId}, (error, account) ->
-                if account
-                    seneca.log.debug 'checking access', account.id, resource, action
-                    acl.addUserRoles accountId, [account.status], (error) ->
-                        if error
-                            seneca.log.error 'adding role to account failed:', error.message
-                            return respond error, null
 
-                        acl.isAllowed accountId, resource, action, (error, res) ->
-                            if error
-                                seneca.log.error 'access check failed', error
-                                respond null, response
-                            else
-                                response.authorized = res
-                                respond null, response
+            , (decodedAccouintId, callback) ->
+                if decodedAccouintId
+                    seneca.log.debug 'using decoded account id...'
+                    accountId = decodedAccouintId
+                if accountId != 'anonymous'
+                    account.get {account_id: accountId}, (error, account) ->
+                        if account
+                            seneca.log.debug 'got user from storage'
+                            # return identified user status
+                            return callback null, account.status
+                        else
+                            seneca.log.warn 'failed to get user from storage'
+                            return callback null, accountId
                 else
-                    seneca.log.debug 'authorization failed, unidentified account', accountId
-                    respond null, response
+                    # just return `anonymous` status
+                    return callback null, accountId
+
+        ], (error, status) ->
+            seneca.log.debug 'checking access', accountId, resource, action
+            acl.addUserRoles accountId, [status], (error) ->
+                if error
+                    seneca.log.error 'attaching role to account failed:', error.message
+                    return respond error, null
+                acl.isAllowed accountId, resource, action, (error, authorized) ->
+                    if error
+                        seneca.log.error 'access check failed', error
+                        return respond error, null
+                    else
+                        response.authorized = authorized
+                        return respond null, response
 
     cmd_authorize

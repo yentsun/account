@@ -11,12 +11,19 @@ acl = new acl acl_backend
 seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
-ac_list = [
+ac_list = [{
     roles: ['new']
     allows: [
         resources: 'profile'
         permissions: 'get'
     ]
+}, {
+    roles: ['anonymous']
+    allows: [
+        resources: ['/login']
+        permissions: 'get'
+    ]
+}
 ]
 
 token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
@@ -242,6 +249,16 @@ describe 'authorize', () ->
             assert.isTrue res.authorized
             do done
 
+    it 'fail to authorize with wrong accountId', (done) ->
+        account.authorize {accountId: 'WRNG01', resource: 'profile', action: 'get'}, (error, res) ->
+            assert.isFalse res.authorized
+            do done
+
+    it 'allows an anonymous user to `get` /login', (done) ->
+        account.authorize {resource: '/login', action: 'get'}, (error, res) ->
+            assert.isTrue res.authorized
+            do done
+
     it 'allows a registered player to view his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
             assert.isTrue res.authorized
@@ -260,29 +277,29 @@ describe 'authorize', () ->
     it 'does not authorize with a verified token of unknown account', (done) ->
         account.issue_token {account_id: 'rubbish_acc_id'}, (error, res) ->
             tkn = res.token
-            account.authorize {token: tkn}, (error, res) ->
+            account.authorize {token: tkn, resource: 'profile', action: 'get'}, (error, res) ->
                 assert.isFalse res.authorized
                 do done
 
     it 'does not authorize with a verified token that has no id field', (done) ->
-        account.authorize {token:
-            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' +
-            'eyJydWJiaXNoIjo1MzM0NTN9.' +
-            '8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4'}, (error, res) ->
+        account.authorize {
+            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJydWJiaXNoIjo1MzM0NTN9.8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4',
+            resource: 'profile', action: 'get'}, (error, res) ->
                 assert.isFalse res.authorized
                 do done
 
     it 'does not authorize with a verified token if there is an acl error', (done) ->
-        sinon.stub acl, 'isAllowed', (account_id, resource, action, callback) ->
+        stub = sinon.stub acl, 'isAllowed', (account_id, resource, action, callback) ->
             error = new Error 'an acl error'
             callback error
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isFalse res.authorized
-            do sinon.restore
+            assert.isNull res
+            assert.include error.message, 'an acl error'
+            do stub.restore
             do done
 
     it 'denies an anonymous user to view profile', (done) ->
-        account.authorize {token: null, resource: 'profile', permission: 'view'}, (error, res) ->
+        account.authorize {token: null, resource: 'profile', action: 'get'}, (error, res) ->
             assert.isFalse res.authorized
             do done
 

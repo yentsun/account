@@ -31,6 +31,14 @@
           permissions: 'get'
         }
       ]
+    }, {
+      roles: ['anonymous'],
+      allows: [
+        {
+          resources: ['/login'],
+          permissions: 'get'
+        }
+      ]
     }
   ];
 
@@ -367,6 +375,25 @@
         return done();
       });
     });
+    it('fail to authorize with wrong accountId', function(done) {
+      return account.authorize({
+        accountId: 'WRNG01',
+        resource: 'profile',
+        action: 'get'
+      }, function(error, res) {
+        assert.isFalse(res.authorized);
+        return done();
+      });
+    });
+    it('allows an anonymous user to `get` /login', function(done) {
+      return account.authorize({
+        resource: '/login',
+        action: 'get'
+      }, function(error, res) {
+        assert.isTrue(res.authorized);
+        return done();
+      });
+    });
     it('allows a registered player to view his profile', function(done) {
       return account.authorize({
         token: token,
@@ -402,7 +429,9 @@
         var tkn;
         tkn = res.token;
         return account.authorize({
-          token: tkn
+          token: tkn,
+          resource: 'profile',
+          action: 'get'
         }, function(error, res) {
           assert.isFalse(res.authorized);
           return done();
@@ -411,14 +440,17 @@
     });
     it('does not authorize with a verified token that has no id field', function(done) {
       return account.authorize({
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.' + 'eyJydWJiaXNoIjo1MzM0NTN9.' + '8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4'
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJydWJiaXNoIjo1MzM0NTN9.8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4',
+        resource: 'profile',
+        action: 'get'
       }, function(error, res) {
         assert.isFalse(res.authorized);
         return done();
       });
     });
     it('does not authorize with a verified token if there is an acl error', function(done) {
-      sinon.stub(acl, 'isAllowed', function(account_id, resource, action, callback) {
+      var stub;
+      stub = sinon.stub(acl, 'isAllowed', function(account_id, resource, action, callback) {
         var error;
         error = new Error('an acl error');
         return callback(error);
@@ -428,8 +460,9 @@
         resource: 'profile',
         action: 'get'
       }, function(error, res) {
-        assert.isFalse(res.authorized);
-        sinon.restore();
+        assert.isNull(res);
+        assert.include(error.message, 'an acl error');
+        stub.restore();
         return done();
       });
     });
@@ -437,7 +470,7 @@
       return account.authorize({
         token: null,
         resource: 'profile',
-        permission: 'view'
+        action: 'get'
       }, function(error, res) {
         assert.isFalse(res.authorized);
         return done();
