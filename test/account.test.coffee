@@ -220,6 +220,7 @@ describe 'issue_token', () ->
 describe 'authorize', () ->
 
     token = null
+    id = null
 
     before (before_done) ->
         acl.allow ac_list, (error) ->
@@ -227,9 +228,15 @@ describe 'authorize', () ->
                 seneca.log.error 'acl load failed: ', error
             else
                 account.register {email: 'authorized@player.com', password: 'authpass'}, (error, res) ->
+                    id = res.id
                     account.issue_token {account_id: res.id}, (error, res) ->
                         token = res.token
                         do before_done
+
+    it 'authorizes with accountId', (done) ->
+        account.authorize {accountId: id, resource: 'profile', action: 'get'}, (error, res) ->
+            assert.isTrue res.authorized
+            do done
 
     it 'allows a registered player to view his profile', (done) ->
         account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
