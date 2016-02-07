@@ -5,9 +5,11 @@
 - [x] coverage 100%
 - [ ] system errors, no silencing
 
+
 0.7.17
 ------
-- authorize with accountId 
+- authorize with accountId
+
 
 0.7.9
 -----
