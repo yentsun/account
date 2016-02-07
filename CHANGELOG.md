@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.19
+------
+- recognize unidentified user as `anonymous` @ `authorize` cmd
+
+
 0.7.17
 ------
 - authorize with accountId
