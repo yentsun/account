@@ -5,6 +5,10 @@
 - [x] coverage 100%
 - [ ] system errors, no silencing
 
+0.7.17
+------
+- authorize with accountId 
+
 0.7.9
 -----
 - 'loose' payload @ `issue token`
