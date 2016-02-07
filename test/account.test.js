@@ -334,8 +334,9 @@
   });
 
   describe('authorize', function() {
-    var token;
+    var id, token;
     token = null;
+    id = null;
     before(function(before_done) {
       return acl.allow(ac_list, function(error) {
         if (error) {
@@ -345,6 +346,7 @@
             email: 'authorized@player.com',
             password: 'authpass'
           }, function(error, res) {
+            id = res.id;
             return account.issue_token({
               account_id: res.id
             }, function(error, res) {
@@ -353,6 +355,16 @@
             });
           });
         }
+      });
+    });
+    it('authorizes with accountId', function(done) {
+      return account.authorize({
+        accountId: id,
+        resource: 'profile',
+        action: 'get'
+      }, function(error, res) {
+        assert.isTrue(res.authorized);
+        return done();
       });
     });
     it('allows a registered player to view his profile', function(done) {
