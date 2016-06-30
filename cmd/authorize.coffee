@@ -11,9 +11,6 @@ module.exports = (seneca, options) ->
         token = args.token
         accountId = args.accountId or 'anonymous'
 
-        account = seneca.pin
-            role: 'account'
-            cmd: '*'
         response =
             authorized: false
 
@@ -22,7 +19,7 @@ module.exports = (seneca, options) ->
             (callback) ->
                 if token
                     # verify and read token payload
-                    account.verify {token: token}, (error, res) ->
+                    seneca.act 'role:account,cmd:verify', {token: token}, (error, res) ->
                         # if error seneca will fail with fatal
                         if !res.decoded or !res.decoded.id
                             seneca.log.error 'failed to decode id'
@@ -36,7 +33,7 @@ module.exports = (seneca, options) ->
                     seneca.log.debug 'using decoded account id...'
                     accountId = decodedAccouintId
                 if accountId != 'anonymous'
-                    account.get {account_id: accountId}, (error, account) ->
+                    seneca.act 'role:account,cmd:get', {account_id: accountId}, (error, account) ->
                         if account
                             seneca.log.debug 'got user from storage'
                             # return identified user status

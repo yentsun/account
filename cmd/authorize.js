@@ -8,22 +8,18 @@
     var acl, cmd_authorize;
     acl = options.acl;
     cmd_authorize = function(args, respond) {
-      var account, accountId, action, resource, response, token;
+      var accountId, action, resource, response, token;
       resource = args.resource;
       action = args.action;
       token = args.token;
       accountId = args.accountId || 'anonymous';
-      account = seneca.pin({
-        role: 'account',
-        cmd: '*'
-      });
       response = {
         authorized: false
       };
       return async.waterfall([
         function(callback) {
           if (token) {
-            return account.verify({
+            return seneca.act('role:account,cmd:verify', {
               token: token
             }, function(error, res) {
               if (!res.decoded || !res.decoded.id) {
@@ -41,7 +37,7 @@
             accountId = decodedAccouintId;
           }
           if (accountId !== 'anonymous') {
-            return account.get({
+            return seneca.act('role:account,cmd:get', {
               account_id: accountId
             }, function(error, account) {
               if (account) {

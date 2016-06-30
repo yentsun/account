@@ -3,9 +3,7 @@ async = require 'async'
 module.exports = (seneca, options) ->
 
     cmd_update = (args, respond) ->
-        account = seneca.pin
-            role: 'account'
-            cmd: '*'
+        
         new_status = args.status
         new_password = args.password
         accountId = args.account_id
@@ -30,7 +28,7 @@ module.exports = (seneca, options) ->
                 , (acc, callback) ->
                     if new_password
                         seneca.log.debug 'updating password...'
-                        account.encrypt {subject: new_password}, (error, res) ->
+                        seneca.act 'role:account,cmd:encrypt', {subject: new_password}, (error, res) ->
                             # if error, seneca will fail with fatal here
                             acc.hash = res.hash
                             return callback error, acc

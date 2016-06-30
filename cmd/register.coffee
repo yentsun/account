@@ -6,9 +6,6 @@ module.exports = (seneca, options) ->
     starter_status = options.starter_status
     password_length = options.password_length or 8
     password_generated = false
-    account = seneca.pin
-        role: 'account'
-        cmd: '*'
 
     cmd_register = (args, respond) ->
 
@@ -22,7 +19,7 @@ module.exports = (seneca, options) ->
                 message: 'invalid email'
 
         # check for registered accounts
-        account.identify {email: email}, (error, acc) ->
+        seneca.act 'role:account,cmd:identify', {email: email}, (error, acc) ->
             if acc
                 seneca.log.warn 'account already registered', acc.email
                 respond null,
@@ -34,7 +31,7 @@ module.exports = (seneca, options) ->
                     password = util.generate_password password_length
                     password_generated = true
                 # hash password
-                account.encrypt {subject: password}, (error, res) ->
+                seneca.act 'role:account,cmd:encrypt', {subject: password}, (error, res) ->
                     # if error, seneca will fail with fatal here
                     hash = res.hash
                     # create new user record
@@ -56,7 +53,7 @@ module.exports = (seneca, options) ->
                         else
                             # issue a confirmation token
                             seneca.log.debug 'issuing the conf token...'
-                            account.issue_token {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
+                            seneca.act 'role:account,cmd:issue_token', {account_id: saved_account.id, reason: 'conf'}, (error, res) ->
                             # if error, seneca will fail with fatal here
                                 saved_account.token = res.token
                                 respond error, saved_account

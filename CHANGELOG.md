@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.21
+------
+- [x] removed pattern pinning from commands
+
+
 0.7.19
 ------
 - recognize unidentified user as `anonymous` @ `authorize` cmd

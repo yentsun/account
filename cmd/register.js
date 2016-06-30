@@ -9,14 +9,10 @@
   util = require('./../util');
 
   module.exports = function(seneca, options) {
-    var account, cmd_register, password_generated, password_length, starter_status;
+    var cmd_register, password_generated, password_length, starter_status;
     starter_status = options.starter_status;
     password_length = options.password_length || 8;
     password_generated = false;
-    account = seneca.pin({
-      role: 'account',
-      cmd: '*'
-    });
     cmd_register = function(args, respond) {
       var email, status;
       email = args.email.toLowerCase();
@@ -27,7 +23,7 @@
           message: 'invalid email'
         });
       }
-      return account.identify({
+      return seneca.act('role:account,cmd:identify', {
         email: email
       }, function(error, acc) {
         var password;
@@ -43,7 +39,7 @@
             password = util.generate_password(password_length);
             password_generated = true;
           }
-          return account.encrypt({
+          return seneca.act('role:account,cmd:encrypt', {
             subject: password
           }, function(error, res) {
             var hash, new_account;
@@ -66,7 +62,7 @@
                 return respond(null, saved_account);
               } else {
                 seneca.log.debug('issuing the conf token...');
-                return account.issue_token({
+                return seneca.act('role:account,cmd:issue_token', {
                   account_id: saved_account.id,
                   reason: 'conf'
                 }, function(error, res) {

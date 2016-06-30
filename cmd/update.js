@@ -7,11 +7,7 @@
   module.exports = function(seneca, options) {
     var cmd_update;
     cmd_update = function(args, respond) {
-      var account, accountId, account_records, new_password, new_status;
-      account = seneca.pin({
-        role: 'account',
-        cmd: '*'
-      });
+      var accountId, account_records, new_password, new_status;
       new_status = args.status;
       new_password = args.password;
       accountId = args.account_id;
@@ -38,7 +34,7 @@
           }, function(acc, callback) {
             if (new_password) {
               seneca.log.debug('updating password...');
-              return account.encrypt({
+              return seneca.act('role:account,cmd:encrypt', {
                 subject: new_password
               }, function(error, res) {
                 acc.hash = res.hash;
