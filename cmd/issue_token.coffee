@@ -6,10 +6,10 @@ module.exports = (seneca, options) ->
     cmd_issue_token = (args, respond) ->
         account_id = args.account_id
         custom_payload = args.payload
-        reason = args.reason or 'auth'
+        aud = args.aud or 'web'
         payload =
             id: account_id
-            reason: reason
+            aud: aud
         res = {}
         secret = options.secret
         _.merge payload, custom_payload

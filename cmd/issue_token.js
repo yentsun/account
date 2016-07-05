@@ -9,13 +9,13 @@
   module.exports = function(seneca, options) {
     var cmd_issue_token;
     cmd_issue_token = function(args, respond) {
-      var account_id, custom_payload, payload, reason, res, secret;
+      var account_id, aud, custom_payload, payload, res, secret;
       account_id = args.account_id;
       custom_payload = args.payload;
-      reason = args.reason || 'auth';
+      aud = args.aud || 'web';
       payload = {
         id: account_id,
-        reason: reason
+        aud: aud
       };
       res = {};
       secret = options.secret;

@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.22
+------
+- [x] renamed `reason` parameter in JWT payload to `aud`
+
+
 0.7.21
 ------
 - [x] removed pattern pinning from commands

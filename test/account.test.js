@@ -87,7 +87,7 @@
         assert.equal(new_account.status, 'new');
         return jwt.verify(new_account.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, new_account.id);
-          assert.equal(decoded.reason, 'conf');
+          assert.equal(decoded.aud, 'email');
           return done();
         });
       });
@@ -321,7 +321,7 @@
       }, function(error, res) {
         return jwt.verify(res.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, id);
-          assert.equal(decoded.reason, 'auth');
+          assert.equal(decoded.aud, 'web');
           assert.equal(decoded.any, 'value');
           return done();
         });
@@ -330,11 +330,11 @@
     return it('returns a confirmation token', function(done) {
       return account.issue_token({
         account_id: id,
-        reason: 'conf'
+        aud: 'email'
       }, function(error, res) {
         return jwt.verify(res.token, token_secret, function(error, decoded) {
           assert.equal(decoded.id, id);
-          assert.equal(decoded.reason, 'conf');
+          assert.equal(decoded.aud, 'email');
           return done();
         });
       });

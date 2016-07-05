@@ -67,7 +67,7 @@ describe 'register', () ->
                 assert.equal new_account.status, 'new'
                 jwt.verify new_account.token, token_secret, (error, decoded) ->
                     assert.equal decoded.id, new_account.id
-                    assert.equal decoded.reason, 'conf'
+                    assert.equal decoded.aud, 'email'
                     do done
 
     it 'registers a new account without password and with `confirmed` status', (done) ->
@@ -216,15 +216,15 @@ describe 'issue_token', () ->
         account.issue_token {account_id: id, payload: {any: 'value'}}, (error, res) ->
             jwt.verify res.token, token_secret, (error, decoded) ->
                 assert.equal decoded.id, id
-                assert.equal decoded.reason, 'auth'
+                assert.equal decoded.aud, 'web'
                 assert.equal decoded.any, 'value'
                 do done
 
     it 'returns a confirmation token', (done) ->
-        account.issue_token {account_id: id, reason: 'conf'}, (error, res) ->
+        account.issue_token {account_id: id, aud: 'email'}, (error, res) ->
             jwt.verify res.token, token_secret, (error, decoded) ->
                 assert.equal decoded.id, id
-                assert.equal decoded.reason, 'conf'
+                assert.equal decoded.aud, 'email'
                 do done
 
 
