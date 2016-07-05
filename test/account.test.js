@@ -24,7 +24,7 @@
 
   ac_list = [
     {
-      roles: ['new'],
+      roles: ['web:new'],
       allows: [
         {
           resources: 'profile',
@@ -32,7 +32,7 @@
         }
       ]
     }, {
-      roles: ['anonymous'],
+      roles: ['web:anonymous'],
       allows: [
         {
           resources: ['/login'],

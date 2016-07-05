@@ -8,33 +8,37 @@
     var acl, cmd_authorize;
     acl = options.acl;
     cmd_authorize = function(args, respond) {
-      var accountId, action, resource, response, token;
+      var accountId, action, aud, resource, response, token;
       resource = args.resource;
       action = args.action;
       token = args.token;
       accountId = args.accountId || 'anonymous';
+      aud = args.aud || 'web';
       response = {
         authorized: false
       };
       return async.waterfall([
-        function(callback) {
+        function(decodingDone) {
           if (token) {
             return seneca.act('role:account,cmd:verify', {
               token: token
             }, function(error, res) {
-              if (!res.decoded || !res.decoded.id) {
-                seneca.log.error('failed to decode id');
+              var payload;
+              payload = res.decoded;
+              if (!payload || !payload.id || !payload.aud) {
+                seneca.log.error('decoding failed');
                 return respond(null, response);
               }
-              return callback(null, res.decoded.id);
+              return decodingDone(null, payload);
             });
           } else {
-            return callback(null, null);
+            return decodingDone(null, null);
           }
-        }, function(decodedAccouintId, callback) {
-          if (decodedAccouintId) {
+        }, function(payload, callback) {
+          if (payload && payload.id && payload.aud) {
             seneca.log.debug('using decoded account id...');
-            accountId = decodedAccouintId;
+            accountId = payload.id;
+            aud = payload.aud;
           }
           if (accountId !== 'anonymous') {
             return seneca.act('role:account,cmd:get', {
@@ -42,18 +46,18 @@
             }, function(error, account) {
               if (account) {
                 seneca.log.debug('got user from storage');
-                return callback(null, account.status);
+                return callback(null, aud + ":" + account.status);
               } else {
                 seneca.log.warn('failed to get user from storage');
-                return callback(null, accountId);
+                return callback(null, aud + ":" + accountId);
               }
             });
           } else {
-            return callback(null, accountId);
+            return callback(null, aud + ":" + accountId);
           }
         }
       ], function(error, status) {
-        seneca.log.debug('checking access', accountId, resource, action);
+        seneca.log.debug("checking access for user " + accountId + ":", status, resource, action);
         return acl.addUserRoles(accountId, [status], function(error) {
           if (error) {
             seneca.log.error('attaching role to account failed:', error.message);
@@ -63,10 +67,9 @@
             if (error) {
               seneca.log.error('access check failed', error);
               return respond(error, null);
-            } else {
-              response.authorized = authorized;
-              return respond(null, response);
             }
+            response.authorized = authorized;
+            return respond(null, response);
           });
         });
       });

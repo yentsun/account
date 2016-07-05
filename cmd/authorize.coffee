@@ -10,43 +10,46 @@ module.exports = (seneca, options) ->
         action = args.action
         token = args.token
         accountId = args.accountId or 'anonymous'
+        aud = args.aud or 'web'
 
         response =
             authorized: false
 
         async.waterfall [
 
-            (callback) ->
+            (decodingDone) ->
                 if token
                     # verify and read token payload
                     seneca.act 'role:account,cmd:verify', {token: token}, (error, res) ->
                         # if error seneca will fail with fatal
-                        if !res.decoded or !res.decoded.id
-                            seneca.log.error 'failed to decode id'
+                        payload = res.decoded
+                        if !payload or !payload.id or !payload.aud
+                            seneca.log.error 'decoding failed'
                             return respond null, response
-                        return callback null, res.decoded.id
+                        return decodingDone null, payload
                 else
-                    return callback null, null
+                    return decodingDone null, null
 
-            , (decodedAccouintId, callback) ->
-                if decodedAccouintId
+            , (payload, callback) ->
+                if payload and payload.id and payload.aud
                     seneca.log.debug 'using decoded account id...'
-                    accountId = decodedAccouintId
+                    accountId = payload.id
+                    aud = payload.aud
                 if accountId != 'anonymous'
                     seneca.act 'role:account,cmd:get', {account_id: accountId}, (error, account) ->
                         if account
                             seneca.log.debug 'got user from storage'
                             # return identified user status
-                            return callback null, account.status
+                            return callback null, "#{aud}:#{account.status}"
                         else
                             seneca.log.warn 'failed to get user from storage'
-                            return callback null, accountId
+                            return callback null, "#{aud}:#{accountId}"
                 else
                     # just return `anonymous` status
-                    return callback null, accountId
+                    return callback null, "#{aud}:#{accountId}"
 
         ], (error, status) ->
-            seneca.log.debug 'checking access', accountId, resource, action
+            seneca.log.debug "checking access for user #{accountId}:", status, resource, action
             acl.addUserRoles accountId, [status], (error) ->
                 if error
                     seneca.log.error 'attaching role to account failed:', error.message
@@ -55,8 +58,7 @@ module.exports = (seneca, options) ->
                     if error
                         seneca.log.error 'access check failed', error
                         return respond error, null
-                    else
-                        response.authorized = authorized
-                        return respond null, response
+                    response.authorized = authorized
+                    return respond null, response
 
     cmd_authorize

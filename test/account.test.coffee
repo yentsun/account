@@ -12,13 +12,13 @@ seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
 ac_list = [{
-    roles: ['new']
+    roles: ['web:new']
     allows: [
         resources: 'profile'
         permissions: 'get'
     ]
 }, {
-    roles: ['anonymous']
+    roles: ['web:anonymous']
     allows: [
         resources: ['/login']
         permissions: 'get'

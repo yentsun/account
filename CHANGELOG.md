@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.23
+------
+- [x] added `aud` to acl user group check
+
+
 0.7.22
 ------
 - [x] renamed `reason` parameter in JWT payload to `aud`
