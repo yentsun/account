@@ -53,7 +53,7 @@
               }
             });
           } else {
-            return callback(null, aud + ":" + accountId);
+            return callback(null, aud + ":anonymous");
           }
         }
       ], function(error, status) {

@@ -46,7 +46,7 @@ module.exports = (seneca, options) ->
                             return callback null, "#{aud}:#{accountId}"
                 else
                     # just return `anonymous` status
-                    return callback null, "#{aud}:#{accountId}"
+                    return callback null, "#{aud}:anonymous"
 
         ], (error, status) ->
             seneca.log.debug "checking access for user #{accountId}:", status, resource, action

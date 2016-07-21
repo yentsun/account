@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.24
+------
+- [x] fixed get user from storage failure scenario
+
+
 0.7.23
 ------
 - [x] added `aud` to acl user group check
