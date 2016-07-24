@@ -3,8 +3,8 @@ moment = require 'moment'
 util = require './../util'
 
 module.exports = (seneca, options) ->
-    starter_status = options.starter_status
-    password_length = options.password_length or 8
+    starter_status = options.registration.starter_status
+    password_length = options.registration.password_length or 8
     password_generated = false
 
     cmd_register = (args, respond) ->
@@ -35,6 +35,7 @@ module.exports = (seneca, options) ->
                     # if error, seneca will fail with fatal here
                     hash = res.hash
                     # create new user record
+
                     new_account = seneca.make options.zone, options.base, 'account'
                     new_account.email = email
                     new_account.hash = hash

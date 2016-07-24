@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.26
+------
+- [x] fixed `zone` and `base` options handling
+
+
 0.7.25
 ------
 - [x] added `zone` and `base` options to `seneca.make`

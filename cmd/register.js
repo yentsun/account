@@ -10,8 +10,8 @@
 
   module.exports = function(seneca, options) {
     var cmd_register, password_generated, password_length, starter_status;
-    starter_status = options.starter_status;
-    password_length = options.password_length || 8;
+    starter_status = options.registration.starter_status;
+    password_length = options.registration.password_length || 8;
     password_generated = false;
     cmd_register = function(args, respond) {
       var email, status;

@@ -42,7 +42,7 @@
     seneca.add("role:" + role + ",cmd:get", get(seneca, options));
     seneca.add("role:" + role + ",cmd:issue_token", issue_token(seneca, options.token));
     seneca.add("role:" + role + ",cmd:encrypt", encrypt(seneca, options));
-    seneca.add("role:" + role + ",cmd:register", register(seneca, options.registration));
+    seneca.add("role:" + role + ",cmd:register", register(seneca, options));
     seneca.add("role:" + role + ",cmd:delete", delete_(seneca, options));
     return {
       name: role

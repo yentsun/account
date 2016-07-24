@@ -29,6 +29,8 @@ ac_list = [{
 token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
 
 options =
+    zone: 'zone'
+    base: 'base'
     test: true
     token:
         secret: token_secret
