@@ -11,7 +11,7 @@
       new_status = args.status;
       new_password = args.password;
       accountId = args.account_id;
-      account_records = seneca.make('account');
+      account_records = seneca.make(options.zone, options.base, 'account');
       return account_records.load$(accountId, function(error, acc) {
         var message;
         if (error) {

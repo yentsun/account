@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.7.25
+------
+- [x] added `zone` and `base` options to `seneca.make`
+
+
 0.7.24
 ------
 - [x] fixed get user from storage failure scenario

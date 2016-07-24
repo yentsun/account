@@ -5,7 +5,7 @@
     cmd_identify = function(args, respond) {
       var account_records, email;
       email = args.email;
-      account_records = seneca.make('account');
+      account_records = seneca.make(options.zone, options.base, 'account');
       return account_records.list$({
         email: email
       }, function(error, accounts) {

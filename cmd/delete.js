@@ -5,7 +5,7 @@
     cmd_delete = function(msg, respond) {
       var account_records, id;
       id = msg.account_id;
-      account_records = seneca.make('account');
+      account_records = seneca.make(options.zone, options.base, 'account');
       return account_records.remove$(id, function(error) {
         if (error) {
           seneca.log.error('error while deleting account', id, error.message);

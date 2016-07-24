@@ -5,7 +5,7 @@
     cmd_get = function(args, respond) {
       var account_records, id;
       id = args.account_id;
-      account_records = seneca.make('account');
+      account_records = seneca.make(options.zone, options.base, 'account');
       return account_records.load$(id, function(error, account) {
         if (error) {
           seneca.log.error('error while loading account:', error.message);

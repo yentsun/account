@@ -30,7 +30,6 @@ token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
 
 options =
     test: true
-
     token:
         secret: token_secret
         jwtNoTimestamp: true

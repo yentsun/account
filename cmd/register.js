@@ -44,7 +44,7 @@
           }, function(error, res) {
             var hash, new_account;
             hash = res.hash;
-            new_account = seneca.make('account');
+            new_account = seneca.make(options.zone, options.base, 'account');
             new_account.email = email;
             new_account.hash = hash;
             new_account.registered_at = moment().format();

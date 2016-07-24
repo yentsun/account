@@ -7,7 +7,7 @@ module.exports = (seneca, options) ->
         new_status = args.status
         new_password = args.password
         accountId = args.account_id
-        account_records = seneca.make 'account'
+        account_records = seneca.make options.zone, options.base, 'account'
 
         # load account
         account_records.load$ accountId, (error, acc) ->
