@@ -36,7 +36,6 @@
     "sinon": "^1.17.2"
   },
   "dependencies": {
-    "acl": "^0.4.9",
     "bcryptjs": "^2.3.0",
     "jsonwebtoken": "^5.4.1",
     "lodash": "^4.5.0",

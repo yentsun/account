@@ -11,20 +11,6 @@ acl = new acl acl_backend
 seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
-ac_list = [{
-    roles: ['web:new']
-    allows: [
-        resources: 'profile'
-        permissions: 'get'
-    ]
-}, {
-    roles: ['web:anonymous']
-    allows: [
-        resources: ['/login']
-        permissions: 'get'
-    ]
-}
-]
 
 token_secret = 'КI7(#*ØḀQ#p%pЗRsN?'
 
@@ -228,90 +214,6 @@ describe 'issue_token', () ->
                 assert.equal decoded.aud, 'email'
                 do done
 
-
-describe 'authorize', () ->
-
-    token = null
-    id = null
-
-    before (before_done) ->
-        acl.allow ac_list, (error) ->
-            if error
-                seneca.log.error 'acl load failed: ', error
-            else
-                account.register {email: 'authorized@player.com', password: 'authpass'}, (error, res) ->
-                    id = res.id
-                    account.issue_token {account_id: res.id}, (error, res) ->
-                        token = res.token
-                        do before_done
-
-    it 'authorizes with accountId', (done) ->
-        account.authorize {accountId: id, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isTrue res.authorized
-            do done
-
-    it 'fail to authorize with wrong accountId', (done) ->
-        account.authorize {accountId: 'WRNG01', resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isFalse res.authorized
-            do done
-
-    it 'allows an anonymous user to `get` /login', (done) ->
-        account.authorize {resource: '/login', action: 'get'}, (error, res) ->
-            assert.isTrue res.authorized
-            do done
-
-    it 'allows a registered player to view his profile', (done) ->
-        account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isTrue res.authorized
-            do done
-
-    it 'does not allow a registered player to delete his profile', (done) ->
-        account.authorize {token: token, resource: 'profile', action: 'delete'}, (error, res) ->
-            assert.isFalse res.authorized
-            do done
-
-    it 'does not authorize with a bad token', (done) ->
-        account.authorize {token: 'bad.token'}, (error, res) ->
-            assert.isFalse res.authorized
-            do done
-
-    it 'does not authorize with a verified token of unknown account', (done) ->
-        account.issue_token {account_id: 'rubbish_acc_id'}, (error, res) ->
-            tkn = res.token
-            account.authorize {token: tkn, resource: 'profile', action: 'get'}, (error, res) ->
-                assert.isFalse res.authorized
-                do done
-
-    it 'does not authorize with a verified token that has no id field', (done) ->
-        account.authorize {
-            token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJydWJiaXNoIjo1MzM0NTN9.8r05YmeNag4q0QtToIqKmUSoz1y2hxlFlPnitNqvpf4',
-            resource: 'profile', action: 'get'}, (error, res) ->
-                assert.isFalse res.authorized
-                do done
-
-    it 'does not authorize with a verified token if there is an acl error', (done) ->
-        stub = sinon.stub acl, 'isAllowed', (account_id, resource, action, callback) ->
-            error = new Error 'an acl error'
-            callback error
-        account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isNull res
-            assert.include error.message, 'an acl error'
-            do stub.restore
-            do done
-
-    it 'denies an anonymous user to view profile', (done) ->
-        account.authorize {token: null, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isFalse res.authorized
-            do done
-
-    it 'fails if there is an acl error on adding a role', (done) ->
-        sinon.stub acl, 'addUserRoles', (id, roles, callback) ->
-            callback new Error 'acl error while adding roles'
-        account.authorize {token: token, resource: 'profile', action: 'get'}, (error, res) ->
-            assert.isNull res
-            assert.include error.message, 'acl error while adding roles'
-            do sinon.restore
-            do done
 
 describe 'get', () ->
 

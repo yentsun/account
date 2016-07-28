@@ -1,9 +1,14 @@
-0.8.0
+0.9.0
 -----
 - [ ] camelCase parameters (opposite to under_score)
 - [ ] basic documentation
 - [x] coverage 100%
 - [ ] system errors, no silencing
+
+
+0.8.0
+-----
+ - [x] removed `account.authorize` command with ACL features
 
 
 0.7.26

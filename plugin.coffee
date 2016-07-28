@@ -15,11 +15,10 @@ module.exports = (options) ->
     role = 'account'
 
     seneca.add "init:#{role}", (msg, respond) ->
-        required = ['registration.starter_status', 'token.secret', 'authorization.acl']
+        required = ['registration.starter_status', 'token.secret']
         util.check_options options, required
         do respond
     seneca.add "role:#{role},cmd:authenticate", authenticate seneca
-    seneca.add "role:#{role},cmd:authorize", authorize seneca, options.authorization
     seneca.add "role:#{role},cmd:identify", identify seneca, options
     seneca.add "role:#{role},cmd:update", update seneca, options
     seneca.add "role:#{role},cmd:verify", verify seneca, options.token

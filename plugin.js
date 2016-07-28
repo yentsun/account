@@ -30,12 +30,11 @@
     role = 'account';
     seneca.add("init:" + role, function(msg, respond) {
       var required;
-      required = ['registration.starter_status', 'token.secret', 'authorization.acl'];
+      required = ['registration.starter_status', 'token.secret'];
       util.check_options(options, required);
       return respond();
     });
     seneca.add("role:" + role + ",cmd:authenticate", authenticate(seneca));
-    seneca.add("role:" + role + ",cmd:authorize", authorize(seneca, options.authorization));
     seneca.add("role:" + role + ",cmd:identify", identify(seneca, options));
     seneca.add("role:" + role + ",cmd:update", update(seneca, options));
     seneca.add("role:" + role + ",cmd:verify", verify(seneca, options.token));
