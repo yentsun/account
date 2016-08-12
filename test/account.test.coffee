@@ -2,12 +2,9 @@ assert = require 'chai'
     .assert
 bcrypt = require 'bcryptjs'
 sinon = require 'sinon'
-acl = require 'acl'
 jwt = require 'jsonwebtoken'
 moment = require 'moment'
 util = require '../util'
-acl_backend = new acl.memoryBackend()
-acl = new acl acl_backend
 seneca_entity = require '../node_modules/seneca/lib/entity'
     .Entity.prototype
 
@@ -21,8 +18,6 @@ options =
     token:
         secret: token_secret
         jwtNoTimestamp: true
-    authorization:
-        acl: acl
     registration:
         starter_status: 'new'
 

@@ -64,7 +64,8 @@
                 seneca.log.debug('issuing the conf token...');
                 return seneca.act('role:account,cmd:issue_token', {
                   account_id: saved_account.id,
-                  aud: 'email'
+                  aud: 'email',
+                  group: saved_account.status
                 }, function(error, res) {
                   saved_account.token = res.token;
                   return respond(error, saved_account);

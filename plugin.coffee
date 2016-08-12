@@ -1,5 +1,4 @@
 authenticate = require './cmd/authenticate'
-authorize = require './cmd/authorize'
 identify = require './cmd/identify'
 update = require './cmd/update'
 verify = require './cmd/verify'
