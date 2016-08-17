@@ -237,11 +237,13 @@ describe 'update', () ->
     it 'updates a user status to `confirmed`', (done) ->
         account.update {account_id: id, status: 'confirmed'}, (error, upd_acc) ->
             assert.equal upd_acc.status, 'confirmed'
+            assert.equal upd_acc.updated[0], 'status'
             do done
 
     it 'updates a user password', (done) ->
         account.update {account_id: id, password: 'newpass'}, (error, upd_acc) ->
             assert.equal upd_acc.email, 'to_update@user.com'
+            assert.equal upd_acc.updated[0], 'password'
             account.authenticate {email: 'to_update@user.com', password: 'newpass'}, (error, res) ->
                 assert.isTrue res.authenticated
                 do done

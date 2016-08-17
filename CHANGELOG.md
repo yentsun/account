@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.8.2
+-----
+ - [x] return fields updated by `account.update` command
+
+
 0.8.0
 -----
  - [x] removed `account.authorize` command with ACL features

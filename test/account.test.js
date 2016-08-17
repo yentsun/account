@@ -357,6 +357,7 @@
         status: 'confirmed'
       }, function(error, upd_acc) {
         assert.equal(upd_acc.status, 'confirmed');
+        assert.equal(upd_acc.updated[0], 'status');
         return done();
       });
     });
@@ -366,6 +367,7 @@
         password: 'newpass'
       }, function(error, upd_acc) {
         assert.equal(upd_acc.email, 'to_update@user.com');
+        assert.equal(upd_acc.updated[0], 'password');
         return account.authenticate({
           email: 'to_update@user.com',
           password: 'newpass'

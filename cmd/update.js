@@ -7,11 +7,12 @@
   module.exports = function(seneca, options) {
     var cmd_update;
     cmd_update = function(args, respond) {
-      var accountId, account_records, new_password, new_status;
+      var accountId, account_records, new_password, new_status, updated;
       new_status = args.status;
       new_password = args.password;
       accountId = args.account_id;
       account_records = seneca.make(options.zone, options.base, 'account');
+      updated = [];
       return account_records.load$(accountId, function(error, acc) {
         var message;
         if (error) {
@@ -29,11 +30,13 @@
             if (new_status) {
               seneca.log.debug('updating status...');
               acc.status = new_status;
+              updated.push('status');
             }
             return callback(null, acc);
           }, function(acc, callback) {
             if (new_password) {
               seneca.log.debug('updating password...');
+              updated.push('password');
               return seneca.act('role:account,cmd:encrypt', {
                 subject: new_password
               }, function(error, res) {
@@ -49,6 +52,9 @@
             if (error) {
               seneca.log.error('account record update failed:', error.message);
               return respond(error, null);
+            }
+            if (saved_acc) {
+              saved_acc.updated = updated;
             }
             return respond(null, saved_acc);
           });
