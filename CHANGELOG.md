@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.8.3
+-----
+ - [x] compare new account status to existing one
+
+
 0.8.2
 -----
  - [x] return fields updated by `account.update` command

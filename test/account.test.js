@@ -361,6 +361,16 @@
         return done();
       });
     });
+    it('does not actually update again the user status to `confirmed`', function(done) {
+      return account.update({
+        account_id: id,
+        status: 'confirmed'
+      }, function(error, upd_acc) {
+        assert.equal(upd_acc.status, 'confirmed');
+        assert.equal(upd_acc.updated.length, 0);
+        return done();
+      });
+    });
     it('updates a user password', function(done) {
       return account.update({
         account_id: id,
