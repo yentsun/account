@@ -22,7 +22,7 @@ module.exports = (seneca, options) ->
             seneca.log.debug 'updating account', acc.id
             async.waterfall [
                 (callback) ->
-                    if new_status and new_status != acc.status
+                    if new_status and (new_status != acc.status)
                         seneca.log.debug 'updating status...'
                         acc.status = new_status
                         updated.push 'status'

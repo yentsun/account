@@ -6,7 +6,12 @@
 - [ ] system errors, no silencing
 
 
-0.8.3
+0.8.4
+-----
+ - [x] fixed weird bug with condition check
+ 
+ 
+ 0.8.3
 -----
  - [x] compare new account status to existing one
 

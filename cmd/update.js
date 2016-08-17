@@ -27,7 +27,7 @@
         seneca.log.debug('updating account', acc.id);
         return async.waterfall([
           function(callback) {
-            if (new_status && new_status !== acc.status) {
+            if (new_status && (new_status !== acc.status)) {
               seneca.log.debug('updating status...');
               acc.status = new_status;
               updated.push('status');
