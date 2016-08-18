@@ -121,21 +121,25 @@ describe 'authenticate', () ->
     it 'returns true if password is correct', (done) ->
         account.authenticate {email: email, password: 'somepassword'}, (error, result) ->
             assert.isTrue result.authenticated
+            assert.equal result.email, email
             do done
 
     it 'returns true if email is set uppercase', (done) ->
         account.authenticate {email: 'NEWEST@kid.com', password: 'somepassword'}, (error, result) ->
             assert.isTrue result.authenticated
+            assert.equal result.email, email
             do done
 
     it 'returns false if password is bad', (done) ->
         account.authenticate {email: email, password: 'bad'}, (error, result) ->
             assert.isFalse result.authenticated
+            assert.isUndefined result.email
             do done
 
     it 'returns false if password is not sent', (done) ->
         account.authenticate {email: email}, (error, result) ->
             assert.isFalse result.authenticated
+            assert.isUndefined result.email
             do done
 
     it 'returns false if account is unidentified', (done) ->

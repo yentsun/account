@@ -174,6 +174,7 @@
         password: 'somepassword'
       }, function(error, result) {
         assert.isTrue(result.authenticated);
+        assert.equal(result.email, email);
         return done();
       });
     });
@@ -183,6 +184,7 @@
         password: 'somepassword'
       }, function(error, result) {
         assert.isTrue(result.authenticated);
+        assert.equal(result.email, email);
         return done();
       });
     });
@@ -192,6 +194,7 @@
         password: 'bad'
       }, function(error, result) {
         assert.isFalse(result.authenticated);
+        assert.isUndefined(result.email);
         return done();
       });
     });
@@ -200,6 +203,7 @@
         email: email
       }, function(error, result) {
         assert.isFalse(result.authenticated);
+        assert.isUndefined(result.email);
         return done();
       });
     });

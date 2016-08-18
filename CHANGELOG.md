@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.8.5
+-----
+ - [x] `authenticate` returns user if check passes
+
+
 0.8.4
 -----
  - [x] fixed weird bug with condition check

@@ -1,4 +1,5 @@
 bcrypt = require 'bcryptjs'
+_ = require 'lodash'
 
 module.exports = (seneca, options) ->
 
@@ -6,7 +7,6 @@ module.exports = (seneca, options) ->
         email = params.email.toLowerCase()
         password = params.password
         response =
-            email: email
             authenticated: false
 
         if email and password
@@ -21,6 +21,8 @@ module.exports = (seneca, options) ->
                         else
                             seneca.log.debug 'password check returned', passed
                             response.authenticated = passed
+                            if passed
+                                _.merge response, account
                             respond null, response
                 else
                     seneca.log.debug 'authentication failed, unidentified account', email
