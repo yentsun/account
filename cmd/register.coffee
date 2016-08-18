@@ -54,7 +54,7 @@ module.exports = (seneca, options) ->
                         else
                             # issue a confirmation token
                             seneca.log.debug 'issuing the conf token...'
-                            seneca.act 'role:account,cmd:issue_token', {account_id: saved_account.id, aud: 'email', group: saved_account.status}, (error, res) ->
+                            seneca.act 'role:account,cmd:issue_token', {account_id: saved_account.id, aud: 'email', payload: {group: saved_account.status}}, (error, res) ->
                             # if error, seneca will fail with fatal here
                                 saved_account.token = res.token
                                 respond error, saved_account

@@ -65,7 +65,9 @@
                 return seneca.act('role:account,cmd:issue_token', {
                   account_id: saved_account.id,
                   aud: 'email',
-                  group: saved_account.status
+                  payload: {
+                    group: saved_account.status
+                  }
                 }, function(error, res) {
                   saved_account.token = res.token;
                   return respond(error, saved_account);
