@@ -6,8 +6,6 @@ module.exports = (seneca, options) ->
     cmd_authenticate = (params, respond) ->
         email = params.email.toLowerCase()
         password = params.password
-        response =
-            authenticated: false
 
         if email and password
             # get the account
@@ -17,19 +15,18 @@ module.exports = (seneca, options) ->
                     bcrypt.compare password, account.hash, (error, passed) ->
                         if error
                             seneca.log.error 'password check failed:', error.message
-                            respond null, response
+                            respond null, null
                         else
                             seneca.log.debug 'password check returned', passed
-                            response.authenticated = passed
                             if passed
-                                _.merge response, account
-                            respond null, response
+                                respond null, account
+                            else
+                                respond null, null
                 else
                     seneca.log.debug 'authentication failed, unidentified account', email
-                    response.identified = false # TODO is this really needed?
-                    respond null, response
+                    respond null, null
         else
             seneca.log.error 'missing account_id or password', email, password
-            respond null, response
+            respond null, null
 
     cmd_authenticate

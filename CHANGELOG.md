@@ -6,6 +6,11 @@
 - [ ] system errors, no silencing
 
 
+0.8.6
+-----
+ - [x] `authenticate` returns null if check fails
+
+
 0.8.5
 -----
  - [x] `authenticate` returns user if check passes

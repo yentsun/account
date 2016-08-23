@@ -9,12 +9,9 @@
   module.exports = function(seneca, options) {
     var cmd_authenticate;
     cmd_authenticate = function(params, respond) {
-      var email, password, response;
+      var email, password;
       email = params.email.toLowerCase();
       password = params.password;
-      response = {
-        authenticated: false
-      };
       if (email && password) {
         return seneca.act('role:account,cmd:identify', {
           email: email
@@ -24,25 +21,24 @@
             return bcrypt.compare(password, account.hash, function(error, passed) {
               if (error) {
                 seneca.log.error('password check failed:', error.message);
-                return respond(null, response);
+                return respond(null, null);
               } else {
                 seneca.log.debug('password check returned', passed);
-                response.authenticated = passed;
                 if (passed) {
-                  _.merge(response, account);
+                  return respond(null, account);
+                } else {
+                  return respond(null, null);
                 }
-                return respond(null, response);
               }
             });
           } else {
             seneca.log.debug('authentication failed, unidentified account', email);
-            response.identified = false;
-            return respond(null, response);
+            return respond(null, null);
           }
         });
       } else {
         seneca.log.error('missing account_id or password', email, password);
-        return respond(null, response);
+        return respond(null, null);
       }
     };
     return cmd_authenticate;

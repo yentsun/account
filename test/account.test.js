@@ -173,7 +173,7 @@
         email: email,
         password: 'somepassword'
       }, function(error, result) {
-        assert.isTrue(result.authenticated);
+        assert.isOk(result.id);
         assert.equal(result.email, email);
         return done();
       });
@@ -183,7 +183,7 @@
         email: 'NEWEST@kid.com',
         password: 'somepassword'
       }, function(error, result) {
-        assert.isTrue(result.authenticated);
+        assert.isOk(result.id);
         assert.equal(result.email, email);
         return done();
       });
@@ -193,8 +193,7 @@
         email: email,
         password: 'bad'
       }, function(error, result) {
-        assert.isFalse(result.authenticated);
-        assert.isUndefined(result.email);
+        assert.isNull(result);
         return done();
       });
     });
@@ -202,8 +201,7 @@
       return account.authenticate({
         email: email
       }, function(error, result) {
-        assert.isFalse(result.authenticated);
-        assert.isUndefined(result.email);
+        assert.isNull(result);
         return done();
       });
     });
@@ -212,8 +210,7 @@
         email: 'doesntexist',
         password: 'doesntmatter'
       }, function(error, result) {
-        assert.isFalse(result.identified);
-        assert.isFalse(result.authenticated);
+        assert.isNull(result);
         return done();
       });
     });
@@ -222,7 +219,7 @@
         email: email,
         password: 20.00
       }, function(error, result) {
-        assert.isFalse(result.authenticated);
+        assert.isNull(result);
         return done();
       });
     });
@@ -386,7 +383,8 @@
           email: 'to_update@user.com',
           password: 'newpass'
         }, function(error, res) {
-          assert.isTrue(res.authenticated);
+          assert.isOk(res.id);
+          assert.equal(res.email, 'to_update@user.com');
           return done();
         });
       });

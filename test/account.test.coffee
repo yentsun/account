@@ -120,38 +120,35 @@ describe 'authenticate', () ->
 
     it 'returns true if password is correct', (done) ->
         account.authenticate {email: email, password: 'somepassword'}, (error, result) ->
-            assert.isTrue result.authenticated
+            assert.isOk result.id
             assert.equal result.email, email
             do done
 
     it 'returns true if email is set uppercase', (done) ->
         account.authenticate {email: 'NEWEST@kid.com', password: 'somepassword'}, (error, result) ->
-            assert.isTrue result.authenticated
+            assert.isOk result.id
             assert.equal result.email, email
             do done
 
     it 'returns false if password is bad', (done) ->
         account.authenticate {email: email, password: 'bad'}, (error, result) ->
-            assert.isFalse result.authenticated
-            assert.isUndefined result.email
+            assert.isNull result
             do done
 
     it 'returns false if password is not sent', (done) ->
         account.authenticate {email: email}, (error, result) ->
-            assert.isFalse result.authenticated
-            assert.isUndefined result.email
+            assert.isNull result
             do done
 
     it 'returns false if account is unidentified', (done) ->
         account.authenticate {email: 'doesntexist', password: 'doesntmatter'}, (error, result) ->
-            assert.isFalse result.identified
-            assert.isFalse result.authenticated
+            assert.isNull result
             do done
 
     it 'returns false if password sent is a float', (done) ->
         # this is needed to trigger `bcrypt.compare` error branch
         account.authenticate {email: email, password: 20.00}, (error, result) ->
-            assert.isFalse result.authenticated
+            assert.isNull result
             do done
 
 
@@ -255,7 +252,8 @@ describe 'update', () ->
             assert.equal upd_acc.email, 'to_update@user.com'
             assert.equal upd_acc.updated[0], 'password'
             account.authenticate {email: 'to_update@user.com', password: 'newpass'}, (error, res) ->
-                assert.isTrue res.authenticated
+                assert.isOk res.id
+                assert.equal res.email, 'to_update@user.com'
                 do done
 
     it 'fails to update if there is a load error', (done) ->
