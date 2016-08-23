@@ -6,7 +6,7 @@
 - [ ] system errors, no silencing
 
 
-0.8.6
+0.8.7
 -----
  - [x] `authenticate` returns null if check fails
 
