@@ -1,6 +1,6 @@
 bcrypt = require 'bcryptjs'
 
-module.exports = (seneca, options) ->
+module.exports = (seneca) ->
 
     cmd_encrypt = (args, respond) ->
         subject = args.subject

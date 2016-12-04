@@ -4,7 +4,7 @@
 
   bcrypt = require('bcryptjs');
 
-  module.exports = function(seneca, options) {
+  module.exports = function(seneca) {
     var cmd_encrypt;
     cmd_encrypt = function(args, respond) {
       var subject;
