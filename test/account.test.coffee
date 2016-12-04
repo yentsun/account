@@ -348,5 +348,3 @@ describe 'util.check_options', () ->
         assert.doesNotThrow () ->
             util.check_options options, required
         do done
-
-
