@@ -7,6 +7,11 @@
 - [ ] system errors, no silencing
 
 
+0.8.9
+-----
+- [x] added `role:account,cmd:count` pattern
+
+
 0.8.8
 -----
 - [x] added `role:account,cmd:list` pattern

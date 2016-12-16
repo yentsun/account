@@ -514,6 +514,7 @@
       return account.count({}, function(error, res) {
         assert.isNull(error);
         assert.isNumber(res.number);
+        assert.isTrue(res.number >= 1);
         return done();
       });
     });
