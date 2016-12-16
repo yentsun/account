@@ -316,18 +316,25 @@ describe 'delete', () ->
 
 
 describe 'list', () ->
-  email = 'fake@test.it'
-  before (done) ->
-    account.register {email: email}, (error, res) ->
-      assert.isNull error
-      do done
+    email = 'fake@test.it'
+    before (done) ->
+        account.register {email: email}, (error, res) ->
+            assert.isNull error
+            do done
 
-  it 'returns list of accounts', (done) ->
-    account.list {skip: 0}, (error, accounts) ->
-      assert.isNull error
-      assert.isArray accounts
-      assert.equal accounts[accounts.length-1].email, email
-      do done
+    it 'returns list of accounts', (done) ->
+        account.list {skip: 0}, (error, accounts) ->
+            assert.isNull error
+            assert.isArray accounts
+            assert.equal accounts[accounts.length - 1].email, email
+            do done
+
+    it 'returns number of accounts', (done) ->
+        account.count {}, (error, res) ->
+            assert.isNull error
+            assert.isNumber res.number
+            assert.isTrue res.number >= 1
+            do done
 
 
 describe 'util.generate_password', () ->

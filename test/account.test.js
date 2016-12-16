@@ -500,13 +500,20 @@
         return done();
       });
     });
-    return it('returns list of accounts', function(done) {
+    it('returns list of accounts', function(done) {
       return account.list({
         skip: 0
       }, function(error, accounts) {
         assert.isNull(error);
         assert.isArray(accounts);
         assert.equal(accounts[accounts.length - 1].email, email);
+        return done();
+      });
+    });
+    return it('returns number of accounts', function(done) {
+      return account.count({}, function(error, res) {
+        assert.isNull(error);
+        assert.isNumber(res.number);
         return done();
       });
     });
