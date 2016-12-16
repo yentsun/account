@@ -7,6 +7,7 @@ issue_token = require './cmd/issue_token'
 encrypt = require './cmd/encrypt'
 register = require './cmd/register'
 delete_ = require './cmd/delete'
+list = require './cmd/list'
 util = require './util'
 
 module.exports = (options) ->
@@ -26,5 +27,6 @@ module.exports = (options) ->
     seneca.add "role:#{role},cmd:encrypt", encrypt seneca, options
     seneca.add "role:#{role},cmd:register", register seneca, options
     seneca.add "role:#{role},cmd:delete", delete_ seneca, options
+    seneca.add "role:#{role},cmd:list", list seneca, options
 
     name: role

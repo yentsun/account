@@ -1,5 +1,6 @@
 0.9.0
 -----
+- [x] added `role:account,cmd:list` pattern
 - [ ] camelCase parameters (opposite to under_score)
 - [ ] basic documentation
 - [x] coverage 100%
