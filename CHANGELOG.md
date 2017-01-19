@@ -1,3 +1,5 @@
+- [x] added ability to get user by email
+
 0.9.0
 -----
 - [x] added `role:account,cmd:count` pattern

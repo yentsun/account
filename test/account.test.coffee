@@ -316,17 +316,29 @@ describe 'delete', () ->
 
 
 describe 'list', () ->
-    email = 'fake@test.it'
+    email1 = 'fake1@test.it'
+    email2 = 'fake2@test.it'
     before (done) ->
-        account.register {email: email}, (error, res) ->
+        account.register {email: email1}, (error, res) ->
             assert.isNull error
-            do done
+            
+            account.register {email: email2}, (error, res) ->
+                assert.isNull error
+                do done
 
     it 'returns list of accounts', (done) ->
-        account.list {skip: 0}, (error, accounts) ->
+        account.list {skip: 1}, (error, accounts) ->
             assert.isNull error
             assert.isArray accounts
-            assert.equal accounts[accounts.length - 1].email, email
+            assert.isTrue accounts.length >= 2
+            do done
+
+    it 'returns account by email', (done) ->
+        account.list {criteria: {email: email2}}, (error, accounts) ->
+            assert.isNull error
+            assert.isArray accounts
+            assert.equal accounts.length, 1
+            assert.equal accounts[0].email, email2
             do done
 
     it 'returns number of accounts', (done) ->
